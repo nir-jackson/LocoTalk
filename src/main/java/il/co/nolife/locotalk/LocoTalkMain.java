@@ -7,6 +7,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.View;
 
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.GeoPt;
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.User;
@@ -146,7 +147,13 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     }
 
     void MarkerClicked(Marker marker){
-        Log.i(getClass().toString(), marker.getTitle());
+
+        Log.i(TAG, "pressed Marker, suppose to open new activity");
+        Intent intent = new Intent(this,ChatActivity.class);
+        startActivity(intent);
+
+
+        //Log.i(getClass().toString(), marker.getTitle());
     }
 
     @Override
@@ -178,6 +185,13 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                 @Override
                 public void onComplete(Boolean result) {
                     ApiHandler.SetMyLocation(fGeo);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            findViewById(R.id.splash).setVisibility(View.GONE);
+                        }
+                    });
+
                 }
             });
 
