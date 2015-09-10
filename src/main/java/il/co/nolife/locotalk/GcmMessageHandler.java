@@ -50,7 +50,7 @@ public class GcmMessageHandler {
                 loc.setLatitude(Float.parseFloat(lat));
                 loc.setLongitude(Float.parseFloat(lon));
                 JSONArray arr = message.optJSONArray("participants");
-                List<LocoUser> users = new ArrayList<>();
+                List<LocoUser> users = new ArrayList<LocoUser>();
                 for(int i = 0; i < arr.length(); ++i) {
 
                     LocoUser u = new LocoUser();

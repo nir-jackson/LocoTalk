@@ -245,7 +245,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         Cursor cursor = db.rawQuery("SELECT * FROM " + DIRECT_MESSAGES_TABLE + " WHERE " + M_FROM + "='" + mail + "'", null);
 
-        List<Message> retVal = new ArrayList<>();
+        List<Message> retVal = new ArrayList<Message>();
 
         if(cursor.moveToFirst()) {
 
@@ -272,7 +272,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         Cursor cursor = db.rawQuery("SELECT * FROM " + LOCATION_MESSAGES_TABLE + " WHERE " + M_FROM + "='" + mail + "'", null);
 
-        List<Message> retVal = new ArrayList<>();
+        List<Message> retVal = new ArrayList<Message>();
 
         if(cursor.moveToFirst()) {
 
@@ -303,7 +303,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         Cursor cursor = db.rawQuery("SELECT * FROM " + FORUM_MESSAGES_TABLE + " WHERE " + F_KEY + "=" + forumId, null);
 
-        List<Message> retVal = new ArrayList<>();
+        List<Message> retVal = new ArrayList<Message>();
 
         if(cursor.moveToFirst()) {
 
@@ -331,7 +331,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         Cursor cursor = db.rawQuery("SELECT * FROM " + FRIENDS_TABLE, null);
 
-        List<LocoUser> retVal = new ArrayList<>();
+        List<LocoUser> retVal = new ArrayList<LocoUser>();
 
         if(cursor.moveToFirst()) {
 
@@ -361,7 +361,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + FORUMS_TABLE, null);
-        List<Forum> retVal = new ArrayList<>();
+        List<Forum> retVal = new ArrayList<Forum>();
 
         if(cursor.moveToFirst()) {
 
@@ -376,7 +376,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
                 f.setName(cursor.getString(cursor.getColumnIndex(F_NAME)));
 
                 Cursor users = db.rawQuery("SELECT * FROM " + FORUM_USERS_TABLE + " WHERE " + F_KEY + "=" + f.getForumId(), null);
-                List<LocoUser> uList = new ArrayList<>();
+                List<LocoUser> uList = new ArrayList<LocoUser>();
 
                 if(users.moveToFirst()) {
 

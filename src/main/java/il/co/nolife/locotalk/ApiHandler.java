@@ -49,7 +49,7 @@ public class ApiHandler {
 
     ApiHandler() {
 
-        delayedCalls = new ArrayList<>();
+        delayedCalls = new ArrayList<IApiCallback<Void>>();
         initialized = false;
 
         try {

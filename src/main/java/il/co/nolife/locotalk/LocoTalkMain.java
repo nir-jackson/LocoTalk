@@ -153,7 +153,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     public void onConnected(Bundle bundle) {
         Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
-        Log.i(getClass().toString(),mLastLocation.toString());
+        // Log.i(getClass().toString(),mLastLocation.toString());
         if (mLastLocation != null) {
             lat = mLastLocation.getLatitude();
             lon = mLastLocation.getLongitude();
