@@ -182,19 +182,33 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             geo.setLongitude((float) lon);
             final GeoPt fGeo = geo;
 
-            ApiHandler.Login(u, new IApiCallback<Boolean>() {
+            final User finalUser = u;
+
+            ApiHandler.GetRegistrationId(new IApiCallback<String>() {
                 @Override
-                public void Invoke(Boolean result) {
-                    ApiHandler.SetMyLocation(fGeo);
-                    runOnUiThread(new Runnable() {
+                public void Invoke(String result) {
+
+                    User innerUser = finalUser;
+                    innerUser.setRegistrationId(result);
+
+                    ApiHandler.Login(innerUser, new IApiCallback<Boolean>() {
                         @Override
-                        public void run() {
-                            findViewById(R.id.splash).setVisibility(View.GONE);
+                        public void Invoke(Boolean result) {
+                            ApiHandler.SetMyLocation(fGeo);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    findViewById(R.id.splash).setVisibility(View.GONE);
+                                }
+                            });
+
                         }
                     });
 
                 }
             });
+
+
 
         }
         setUpMapIfNeeded();

@@ -81,6 +81,23 @@ public class ApiHandler {
 
     }
 
+    public static void GetRegistrationId(final IApiCallback<String> callback) {
+
+        if(instance.initialized) {
+            callback.Invoke(instance.regId);
+        } else {
+
+            instance.delayedCalls.add(new IApiCallback<Void>() {
+                @Override
+                public void Invoke(Void result) {
+                    callback.Invoke(instance.regId);
+                }
+            });
+
+        }
+
+    }
+
     public static void RetrieveMessage(final long messageId, final IApiCallback<Message> onEnd) {
 
         if (instance.initialized) {
