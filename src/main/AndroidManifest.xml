@@ -11,10 +11,10 @@
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
     <uses-permission android:name="com.google.android.c2dm.intent.REGISTER" />
     <permission
-        android:name="com.ketan.demo.permission.C2D_MESSAGE"
+        android:name="il.co.nolife.locotalk.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
     <uses-permission
-        android:name="com.ketan.demo.permission.C2D_MESSAGE" />
+        android:name="il.co.nolife.locotalk.permission.C2D_MESSAGE" />
 
     <!-- This app has permission to register and receive data message. -->
     <uses-permission
@@ -62,17 +62,19 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <receiver
-                android:name="il.co.nolife.locotalk.LocoTalkMessageReceiver"
-                android:exported="true"
-                android:permission="com.google.android.c2dm.permission.SEND" >
-                <intent-filter>
-                    <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-                    <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-                    <category android:name="YOUR_PACKAGE_NAME" />
-                </intent-filter>
-            </receiver>
         </activity>
+
+        <receiver
+            android:name="il.co.nolife.locotalk.LocoTalkMessageReceiver"
+            android:exported="true"
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+                <category android:name="il.co.nolife.locotalk" />
+            </intent-filter>
+        </receiver>
+        
     </application>
 
 </manifest>
