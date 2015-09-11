@@ -73,18 +73,19 @@ public class ChatListAdapter extends ArrayAdapter<Message> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        if(convertView == null) {
 
-        LayoutInflater inflater = (LayoutInflater) context
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View rowView = inflater.inflate(R.layout.chat_item, parent, false);
-
+            LayoutInflater inflater = (LayoutInflater) context
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            convertView = inflater.inflate(R.layout.chat_item, parent, false);
+        }
         ViewMetadata meta = (ViewMetadata) convertView.getTag();
 
         if(meta == null) {
 
             meta = new ViewMetadata();
-            meta.content = (TextView) rowView.findViewById(R.id.chatItemContent);
-            meta.image = (ImageView) rowView.findViewById(R.id.chatItemIcon);
+            meta.content = (TextView) convertView.findViewById(R.id.chatItemContent);
+            meta.image = (ImageView) convertView.findViewById(R.id.chatItemIcon);
 
         }
 
@@ -96,7 +97,7 @@ public class ChatListAdapter extends ArrayAdapter<Message> {
             AppController.GetImage(u.getImageUrl(), new ThumbnailTask(meta, position));
         }
 
-        return rowView;
+        return convertView;
 
     }
 

@@ -149,10 +149,13 @@ public class ApiHandler {
         if(instance.initialized) {
 
             String pass = instance.prefs.GetPassword();
+            User u2 = user;
+            u2.setPassword(pass);
+            Log.i("user password", pass);
             if(pass.isEmpty()) {
                 instance.Register(user, callback);
             }
-            instance.LoginAsync(user, new IApiCallback<User>() {
+            instance.LoginAsync(u2, new IApiCallback<User>() {
                 @Override
                 public void Invoke(User result) {
 
@@ -498,7 +501,7 @@ public class ApiHandler {
                         onEnd.Invoke(u);
                     }
                 } catch (IOException e) {
-                    Log.e(getClass().toString(), e.getMessage());
+                    Log.e(getClass().toString() + ":registerAsync:",  e.getMessage());
                     if(onEnd != null){
                         onEnd.Invoke(null);
                     }
@@ -520,12 +523,14 @@ public class ApiHandler {
             protected Void doInBackground(Void... params) {
 
                 try {
+
                     User u = api.login(user.getMail(), user.getPassword(), user.getRegistrationId()).execute();
+
                     if(onEnd != null) {
                         onEnd.Invoke(u);
                     }
                 }catch (Exception e) {
-                    Log.e(getClass().toString(), e.getMessage());
+                    Log.e(getClass().toString() + ":LoginAsync:", e.getMessage());
                     if(onEnd != null) {
                         onEnd.Invoke(null);
                     }

@@ -172,7 +172,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             String personName = currentPerson.getDisplayName();
             String personPhoto = currentPerson.getImage().getUrl();
             String personEmail = Plus.AccountApi.getAccountName(mGoogleApiClient);
-            Log.i(TAG, currentPerson.getCurrentLocation());
+            //Log.i(TAG, currentPerson.getCurrentLocation());
             User u = new User();
             u.setFullName(personName);
             u.setMail(personEmail);

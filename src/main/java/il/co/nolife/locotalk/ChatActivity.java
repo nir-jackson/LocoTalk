@@ -3,10 +3,15 @@ package il.co.nolife.locotalk;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.Message;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,7 +21,8 @@ public class ChatActivity extends Activity {
 
     ChatListAdapter adapter;
     ListView list;
-
+    EditText mail,content;
+    List<Message> listm;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -27,26 +33,45 @@ public class ChatActivity extends Activity {
 
         Intent intent = getIntent();
         int ex = intent.getIntExtra("type", -1);
+        listm = new ArrayList<>();
+        adapter = new ChatListAdapter(this,listm,this);
+        list.setAdapter(adapter);
 
 
-        if(ex > -1) {
-            EChatType type = EChatType.values()[ex];
-
-            switch (type) {
-                case PRIVATE:
-                    PrivateChat(intent);
-                    break;
-
-                case EVENT:
-                    EventChat(intent);
-                    break;
-
-                case FORUM:
-                    ForumChat(intent);
-                    break;
+        mail = (EditText)findViewById(R.id.to_email);
+        content = (EditText)findViewById(R.id.message_content);
+        Button b = (Button)findViewById(R.id.sendbutton);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Message m = new Message();
+                m.setContnet(content.getText().toString());
+                m.setTo(mail.getText().toString());
+                m.setFrom(ApiHandler.GetUser().getMail());
+                Log.i(getClass().toString(),m.toString());
+                ApiHandler.SendMessageToUser(m, null);
+                listm.add(m);
 
             }
-        }
+        });
+//        if(ex > -1) {
+//            EChatType type = EChatType.values()[ex];
+//
+//            switch (type) {
+//                case PRIVATE:
+//                    PrivateChat(intent);
+//                    break;
+//
+//                case EVENT:
+//                    EventChat(intent);
+//                    break;
+//
+//                case FORUM:
+//                    ForumChat(intent);
+//                    break;
+//
+//            }
+//        }
 
 
     }
