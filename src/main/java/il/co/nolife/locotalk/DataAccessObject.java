@@ -20,116 +20,143 @@ import java.util.List;
  */
 public class DataAccessObject extends SQLiteOpenHelper {
 
-    public static final int DATABASE_VERSION = 1;
+    public static final String TAG = "DataAccessObject";
+
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "areaChat";
 
-    public static final String DIRECT_MESSAGES_TABLE = "directMessages";
-    public static final String M_KEY = "messageId";
+    public static final String CONVERSATION_TABLE = "conversations";
+    public static final String C_KEY = "conversationId";
+
+    public static final String LOC_LAT = "latitude";
+    public static final String LOC_LON = "longitude";
+    public static final String OWNER = "owner";
+    public static final String NAME = "name";
+
+    public static final String MESSAGE_CONVERSATION = "messageConversation";
     public static final String M_FROM = "sender";
     public static final String M_CONTENT = "content";
     public static final String M_TIME = "time";
 
-    public static final String LOCATION_MESSAGES_TABLE = "tocationMessages";
-    public static final String M_LOC_LAT = "messageLat";
-    public static final String M_LOC_LON = "messageLon";
+    public static final String DIRECT_CONVERSATIONS_TABLE = "directConversations";
 
     public static final String FORUMS_TABLE = "forums";
     public static final String F_KEY = "forumId";
-    public static final String F_NAME = "name";
-    public static final String F_LOC_LAT = "locationLat";
-    public static final String F_LOC_LON = "locationLon";
 
-    public static final String FORUM_MESSAGES_TABLE = "forumMessages";
     public static final String FORUM_USERS_TABLE = "forumUsers";
 
-    public static final String FRIENDS_TABLE = "friendsTable";
+    public static final String EVENTS_TABLE = "events";
+    public static final String E_KEY = "eventId";
+
+    public static final String FRIENDS_TABLE = "friends";
     public static final String U_MAIL = "mail";
-    public static final String U_NAME = "name";
-    public static final String U_LOC_LAT = "locationLat";
-    public static final String U_LOC_LON = "locationLon";
     public static final String U_SAFE = "safe";
 
+    public static final String EVENT_COLLISIONS_TABLE = "eventCollisions";
+    public static final String FORUM_COLLISIONS_TABLE = "forumCollisions";
+    public static final String COL_FROM = "from";
+    public static final String COL_TO = "to";
+
+    Context context;
+
     public DataAccessObject(Context context) {
+
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context = context;
+
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-        String createPrivate = "CREATE TABLE " + DIRECT_MESSAGES_TABLE + "("
-                + M_KEY + " INTEGER PRIMARY KEY, "
+        String createConversations = "CREATE TABLE " + CONVERSATION_TABLE + " ("
+                + C_KEY + " INTEGER PRIMARY KEY)";
+
+        db.execSQL(createConversations);
+
+        String msgConvConnector = "CREATE TABLE " + MESSAGE_CONVERSATION + " ("
+                + C_KEY + " INTEGER, "
                 + M_FROM + " TEXT, "
-                + M_CONTENT + " TEXT, "
-                + M_TIME + " INTEGER"
-                + ")";
+                + M_TIME + " INTEGER, "
+                + M_CONTENT + " TEXT)";
+
+        db.execSQL(msgConvConnector);
+
+        String createPrivate = "CREATE TABLE " + DIRECT_CONVERSATIONS_TABLE + " ("
+                + M_FROM + " TEXT, "
+                + C_KEY + " INTEGER)";
 
         db.execSQL(createPrivate);
 
-        String createPrivateLoc = "CREATE TABLE " + LOCATION_MESSAGES_TABLE + "("
-                + M_KEY + " INTEGER PRIMARY KEY, "
-                + M_FROM + " TEXT, "
-                + M_CONTENT + " TEXT, "
-                + M_TIME + " INTEGER, "
-                + M_LOC_LAT + " REAL, "
-                + M_LOC_LON + " REAL"
-                + ")";
-
-        db.execSQL(createPrivateLoc);
-
-        String createForums = "CREATE TABLE " + FORUMS_TABLE + "("
+        String createForums = "CREATE TABLE " + FORUMS_TABLE + " ("
                 + F_KEY + " INTEGER PRIMARY KEY, "
-                + F_NAME + " TEXT, "
-                + F_LOC_LAT + " REAL, "
-                + F_LOC_LON + " REAL"
-                + ")";
+                + NAME + " TEXT, "
+                + OWNER + " TEXT, "
+                + C_KEY + " INTEGER, "
+                + LOC_LAT + " REAL, "
+                + LOC_LON + " REAL)";
 
         db.execSQL(createForums);
 
-        String createForumMessages = "CREATE TABLE " + FORUM_MESSAGES_TABLE + "("
-                + F_KEY + " INTEGER, "
-                + M_KEY + " INTEGER PRIMARY KEY, "
-                + M_FROM + " TEXT, "
-                + M_CONTENT + " TEXT, "
-                + M_TIME + " INTEGER"
-                + ")";
-
-        db.execSQL(createForumMessages);
-
-        String forumForumUsers = "CREATE TABLE " + FORUM_USERS_TABLE + "("
+        String forumUsersConnector = "CREATE TABLE " + FORUM_USERS_TABLE + " ("
                 + F_KEY + " INTEGER, "
                 + U_MAIL + " TEXT, "
-                + U_NAME + " TEXT"
-                + ")";
+                + NAME + " TEXT)";
 
-        db.execSQL(forumForumUsers);
+        db.execSQL(forumUsersConnector);
 
-        String createFriends = "CREATE TABLE " + FRIENDS_TABLE + "("
+        String createEvents = "CREATE TABLE " + EVENTS_TABLE + " ("
+                + E_KEY + " INTEGER PRIMARY KEY, "
+                + NAME + " TEXT, "
+                + OWNER + " TEXT, "
+                + C_KEY + " INTEGER, "
+                + LOC_LAT + " REAL, "
+                + LOC_LON + " REAL)";
+
+        db.execSQL(createEvents);
+
+        String createFriends = "CREATE TABLE " + FRIENDS_TABLE + " ("
                 + U_MAIL + " TEXT, "
-                + U_NAME + " TEXT, "
-                + U_LOC_LAT + " REAL, "
-                + U_LOC_LON + " REAL, "
-                + U_SAFE + " INTEGER"
-                + ")";
+                + NAME + " TEXT, "
+                + LOC_LAT + " REAL, "
+                + LOC_LON + " REAL, "
+                + U_SAFE + " INTEGER)";
 
         db.execSQL(createFriends);
+
+        String createForumCollisions = "CREATE TABLE " + FORUM_COLLISIONS_TABLE + " ("
+                + COL_FROM + " INTEGER, "
+                + OWNER + " TEXT, "
+                + COL_TO + " INTEGER)";
+
+        db.execSQL(createForumCollisions);
+
+        String createEventCollisions = "CREATE TABLE " + EVENT_COLLISIONS_TABLE + " ("
+                + COL_FROM + " INTEGER, "
+                + OWNER + " TEXT, "
+                + COL_TO + " INTEGER)";
+
+        db.execSQL(createEventCollisions);
 
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-        db.execSQL("DROP TABLE IF EXISTS " + DIRECT_MESSAGES_TABLE);
-        db.execSQL("DROP TABLE IF EXISTS " + LOCATION_MESSAGES_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + CONVERSATION_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + MESSAGE_CONVERSATION);
+        db.execSQL("DROP TABLE IF EXISTS " + DIRECT_CONVERSATIONS_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + FORUMS_TABLE);
-        db.execSQL("DROP TABLE IF EXISTS " + FORUM_MESSAGES_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + FORUM_USERS_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + FRIENDS_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + FORUM_COLLISIONS_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + EVENT_COLLISIONS_TABLE);
 
         onCreate(db);
 
     }
 
-    public void WriteMessageFromUser(Message message) {
+    public void WriteMessageToConversation(Message message, long convId) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -137,173 +164,21 @@ public class DataAccessObject extends SQLiteOpenHelper {
         values.put(M_FROM, message.getFrom());
         values.put(M_TIME, message.getTimestamp().getValue());
         values.put(M_CONTENT, message.getContnet());
+        values.put(C_KEY, convId);
 
-        if(message.getLocation() != null) {
-
-            values.put(M_LOC_LAT, message.getLocation().getLatitude());
-            values.put(M_LOC_LON, message.getLocation().getLongitude());
-            db.insert(LOCATION_MESSAGES_TABLE, null, values);
-
-        } else {
-            db.insert(DIRECT_MESSAGES_TABLE, null, values);
-        }
-
-        db.close();
-
-    }
-
-    public Boolean CreateForum(List<LocoUser> uList, GeoPt pt, String name, long forumId) {
-
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(F_LOC_LAT, pt.getLatitude());
-        values.put(F_LOC_LON, pt.getLongitude());
-        values.put(F_KEY, forumId);
-        values.put(F_NAME, name);
-
-        long res = db.insert(FORUMS_TABLE, null, values);
-
-        if(res != -1) {
-
-            for (LocoUser u : uList) {
-
-                ContentValues userVal = new ContentValues();
-                userVal.put(F_KEY, forumId);
-                userVal.put(U_MAIL, u.getMail());
-                userVal.put(U_NAME, u.getName());
-                db.insert(FORUM_USERS_TABLE, null, userVal);
-
-            }
-            return true;
-
-        } else {
-            return false;
+        if(db.insert(MESSAGE_CONVERSATION, null, values) == -1) {
+            Log.e(TAG, "Failed to insert message into conversation table");
         }
 
     }
 
-    public void RemoveUserFromForum(String mail, long forumId) {
+    public List<Message> GetMessagesFromConversation(long convId) {
 
         SQLiteDatabase db = this.getWritableDatabase();
-
-        db.rawQuery("DELETE FROM " + FORUM_USERS_TABLE + " WHERE " + U_MAIL + "='" + mail + "' AND " + F_KEY + "=" + forumId, null);
-
-    }
-
-    public void WriteMessageToForum(long forumId, Message message) {
-
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(F_KEY, forumId);
-        values.put(M_FROM, message.getFrom());
-        values.put(M_TIME, message.getTimestamp().getValue());
-        values.put(M_CONTENT, message.getContnet());
-
-        db.insert(FORUM_MESSAGES_TABLE, null, values);
-        db.close();
-
-    }
-
-    public void AddFriend(LocoUser user) {
-
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        Cursor cursor = db.rawQuery("SELECT * FROM " + FRIENDS_TABLE + " WHERE " + U_MAIL + "='" + user.getMail() + "'", null);
-
-        if(cursor.getCount() > 0) {
-            Log.e(getClass().toString(), "Trying to insert a user with the same mail");
-        } else {
-
-            ContentValues values = new ContentValues();
-            values.put(U_MAIL, user.getMail());
-            values.put(U_NAME, user.getName());
-            values.put(U_LOC_LAT, user.getLocation().getLatitude());
-            values.put(U_LOC_LON, user.getLocation().getLongitude());
-            values.put(U_SAFE, 0);
-
-            db.insert(FRIENDS_TABLE, null, values);
-
-        }
-
-        cursor.close();
-
-    }
-
-    public void ValidateFriend(String mail) {
-
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        db.rawQuery("UPDATE " + FRIENDS_TABLE + " SET " + U_SAFE + "=1 WHERE " + U_MAIL + "='" + mail + "'", null);
-
-    }
-
-    public List<Message> GetMessagesFromUser(String mail) {
-
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        Cursor cursor = db.rawQuery("SELECT * FROM " + DIRECT_MESSAGES_TABLE + " WHERE " + M_FROM + "='" + mail + "'", null);
 
         List<Message> retVal = new ArrayList<Message>();
 
-        if(cursor.moveToFirst()) {
-
-            do {
-
-                Message m = new Message();
-                m.setTimestamp(new DateTime(cursor.getLong(cursor.getColumnIndex(M_TIME))));
-                m.setContnet(cursor.getString(cursor.getColumnIndex(M_CONTENT)));
-                retVal.add(m);
-
-            } while(cursor.moveToNext());
-
-        }
-
-        cursor.close();
-
-        return retVal;
-
-    }
-
-    public List<Message> GetLocationMessagesFromUser(String mail) {
-
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        Cursor cursor = db.rawQuery("SELECT * FROM " + LOCATION_MESSAGES_TABLE + " WHERE " + M_FROM + "='" + mail + "'", null);
-
-        List<Message> retVal = new ArrayList<Message>();
-
-        if(cursor.moveToFirst()) {
-
-            do {
-
-                Message m = new Message();
-                m.setTimestamp(new DateTime(cursor.getLong(cursor.getColumnIndex(M_TIME))));
-                m.setContnet(cursor.getString(cursor.getColumnIndex(M_CONTENT)));
-                GeoPt l = new GeoPt();
-                l.setLatitude(cursor.getFloat(cursor.getColumnIndex(M_LOC_LAT)));
-                l.setLongitude(cursor.getFloat(cursor.getColumnIndex(M_LOC_LON)));
-                m.setLocation(l);
-                retVal.add(m);
-
-            } while(cursor.moveToNext());
-
-        }
-
-        cursor.close();
-
-        return retVal;
-
-    }
-
-    public List<Message> GetAllMessagesFromForum(long forumId) {
-
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        Cursor cursor = db.rawQuery("SELECT * FROM " + FORUM_MESSAGES_TABLE + " WHERE " + F_KEY + "=" + forumId, null);
-
-        List<Message> retVal = new ArrayList<Message>();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + MESSAGE_CONVERSATION + " WHERE " + C_KEY + "=" + convId, null);
 
         if(cursor.moveToFirst()) {
 
@@ -325,6 +200,423 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
     }
 
+    public void WriteMessageFromUser(Message message) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor conversation = db.rawQuery("SELECT * FROM " + DIRECT_CONVERSATIONS_TABLE + " WHERE " + M_FROM + "='" + message.getFrom() + "'", null);
+
+        if(conversation.getColumnCount() > 0) {
+
+            conversation.moveToFirst();
+            WriteMessageToConversation(message, conversation.getLong(conversation.getColumnIndex(C_KEY)));
+
+        } else {
+
+            long convId = db.insert(CONVERSATION_TABLE, null, null);
+            WriteMessageToConversation(message, convId);
+
+            ContentValues newUserConv = new ContentValues();
+            newUserConv.put(M_FROM, message.getFrom());
+            newUserConv.put(C_KEY, convId);
+            db.insert(DIRECT_CONVERSATIONS_TABLE, null, newUserConv);
+
+        }
+
+        conversation.close();
+
+        AppController.NewPrivateMessage(message.getFrom());
+
+    }
+
+    public Boolean CreateOwnedForum(List<LocoUser> uList, GeoPt pt, String name, String owner, long forumId) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(LOC_LAT, pt.getLatitude());
+        values.put(LOC_LON, pt.getLongitude());
+        values.put(F_KEY, forumId);
+        values.put(NAME, name);
+        values.put(OWNER, owner);
+
+        long convId = db.insert(CONVERSATION_TABLE, null, null);
+        values.put(C_KEY, convId);
+
+        long res = db.insert(FORUMS_TABLE, null, values);
+
+        if(res != -1) {
+
+            for (LocoUser u : uList) {
+
+                ContentValues userVal = new ContentValues();
+                userVal.put(F_KEY, forumId);
+                userVal.put(U_MAIL, u.getMail());
+                userVal.put(NAME, u.getName());
+                db.insert(FORUM_USERS_TABLE, null, userVal);
+
+            }
+
+            AppController.NewForum(forumId);
+            return true;
+
+        } else {
+            return false;
+        }
+
+    }
+
+    public Long CreateUnownedForum(List<LocoUser> uList, GeoPt pt, String name, String owner, long forumId) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor created = db.rawQuery("SELECT * FROM " + FORUM_COLLISIONS_TABLE + " WHERE " + COL_FROM + "=" + forumId, null);
+
+        if(created.moveToFirst()) {
+
+            do {
+                if(created.getString(created.getColumnIndex(OWNER)).compareTo(owner) == 0) {
+                    // This forum already exists
+                    return null;
+                }
+            } while(created.moveToNext());
+
+        }
+
+        created.close();
+        created = db.rawQuery("SELECT * FROM " + FORUMS_TABLE + " WHERE " + F_KEY + "=" + forumId, null);
+        if(created.moveToFirst()) {
+            if(created.getString(created.getColumnIndex(OWNER)).compareTo(owner) == 0) {
+                // This forum already exists
+                return null;
+            }
+        }
+        created.close();
+
+        ContentValues values = new ContentValues();
+        values.put(LOC_LAT, pt.getLatitude());
+        values.put(LOC_LON, pt.getLongitude());
+        values.put(F_KEY, forumId);
+        values.put(NAME, name);
+        values.put(OWNER, owner);
+
+        long convId = db.insert(CONVERSATION_TABLE, null, null);
+        values.put(C_KEY, convId);
+
+        long res = db.insert(FORUMS_TABLE, null, values);
+
+        if(res != -1) {
+
+            for (LocoUser u : uList) {
+
+                ContentValues userVal = new ContentValues();
+                userVal.put(F_KEY, forumId);
+                userVal.put(U_MAIL, u.getMail());
+                userVal.put(NAME, u.getName());
+                db.insert(FORUM_USERS_TABLE, null, userVal);
+
+            }
+
+        } else {
+
+            values.remove(F_KEY);
+
+            long newId = db.insert(FORUMS_TABLE, null, values);
+
+            for (LocoUser u : uList) {
+
+                ContentValues userVal = new ContentValues();
+                userVal.put(F_KEY, newId);
+                userVal.put(U_MAIL, u.getMail());
+                userVal.put(NAME, u.getName());
+                db.insert(FORUM_USERS_TABLE, null, userVal);
+
+            }
+
+            ContentValues collision = new ContentValues();
+            collision.put(COL_FROM, forumId);
+            collision.put(OWNER, owner);
+            collision.put(COL_TO, newId);
+
+            db.insert(FORUM_COLLISIONS_TABLE, null, collision);
+            res = newId;
+
+        }
+
+        AppController.NewForum(forumId);
+        return res;
+
+    }
+
+    public void WriteMessageToForum(long forumId, String owner, Message message) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor collision = db.rawQuery("SELECT * FROM " + FORUM_COLLISIONS_TABLE + " WHERE " + COL_FROM + "=" + forumId, null);
+
+        if(collision.moveToFirst()) {
+
+            do {
+
+                long collidingForumId = collision.getLong(collision.getColumnIndex(COL_FROM));
+                if(collidingForumId == forumId) {
+
+                    if (collision.getString(collision.getColumnIndex(OWNER)).compareTo(owner) == 0) {
+
+                        long resolvedForumId = collision.getLong(collision.getColumnIndex(COL_TO));
+                        Cursor forum = db.rawQuery("SELECT * FROM " + FORUMS_TABLE + " WHERE " + F_KEY + "=" + resolvedForumId, null);
+                        if(forum.moveToFirst()) {
+                            WriteMessageToConversation(message, forum.getLong(forum.getColumnIndex(C_KEY)));
+                            AppController.NewForumMessage(resolvedForumId);
+                            break;
+                        }
+
+                        forum.close();
+
+                    }
+
+                }
+
+            } while(collision.moveToNext());
+
+        } else {
+
+            Cursor forum = db.rawQuery("SELECT * FROM " + FORUMS_TABLE + " WHERE " + F_KEY + "=" + forumId, null);
+
+            if(forum.moveToFirst()) {
+
+                WriteMessageToConversation(message, forum.getLong(forum.getColumnIndex(C_KEY)));
+                AppController.NewForumMessage(forumId);
+
+            }
+
+            forum.close();
+
+        }
+
+        collision.close();
+
+    }
+
+    public Boolean CreateOwnedEvent(GeoPt loc, String name, String owner, long eventId) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(LOC_LAT, loc.getLatitude());
+        values.put(LOC_LON, loc.getLongitude());
+        values.put(E_KEY, eventId);
+        values.put(NAME, name);
+        values.put(OWNER, owner);
+
+        long convId = db.insert(CONVERSATION_TABLE, null, null);
+        values.put(C_KEY, convId);
+
+        long res = db.insert(EVENTS_TABLE, null, values);
+
+        if(res != -1) {
+
+            AppController.NewEvent(eventId);
+            return true;
+
+        } else {
+            return false;
+        }
+
+    }
+
+    public Long CreateUnownedEvent(GeoPt loc, String name, String owner, long eventId) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor created = db.rawQuery("SELECT * FROM " + EVENT_COLLISIONS_TABLE + " WHERE " + COL_FROM + "=" + eventId, null);
+
+        if(created.moveToFirst()) {
+
+            do {
+                if(created.getString(created.getColumnIndex(OWNER)).compareTo(owner) == 0) {
+                    // This event already exists
+                    return null;
+                }
+            } while(created.moveToNext());
+
+        }
+
+        created.close();
+        created = db.rawQuery("SELECT * FROM " + EVENTS_TABLE + " WHERE " + F_KEY + "=" + eventId, null);
+        if(created.moveToFirst()) {
+            if(created.getString(created.getColumnIndex(OWNER)).compareTo(owner) == 0) {
+                // This event already exists
+                return null;
+            }
+        }
+
+        created.close();
+
+        ContentValues values = new ContentValues();
+        values.put(LOC_LAT, loc.getLatitude());
+        values.put(LOC_LON, loc.getLongitude());
+        values.put(E_KEY, eventId);
+        values.put(NAME, name);
+        values.put(OWNER, owner);
+
+        long convId = db.insert(CONVERSATION_TABLE, null, null);
+        values.put(C_KEY, convId);
+
+        long res = db.insert(EVENTS_TABLE, null, values);
+
+        if(res == -1) {
+
+            values.remove(E_KEY);
+
+            long newId = db.insert(EVENTS_TABLE, null, values);
+
+            ContentValues collision = new ContentValues();
+            collision.put(COL_FROM, eventId);
+            collision.put(OWNER, owner);
+            collision.put(COL_TO, newId);
+
+            db.insert(EVENT_COLLISIONS_TABLE, null, collision);
+            res = newId;
+
+        }
+
+        AppController.NewEvent(eventId);
+        return res;
+
+    }
+
+    public void WriteMessageToEvent(long eventId, String name, String owner, GeoPt loc, Message message) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor collision = db.rawQuery("SELECT * FROM " + EVENT_COLLISIONS_TABLE + " WHERE " + COL_FROM + "=" + eventId, null);
+
+        if(collision.moveToFirst()) {
+
+            do {
+
+                long collidingForumId = collision.getLong(collision.getColumnIndex(COL_FROM));
+                if(collidingForumId == eventId) {
+
+                    if (collision.getString(collision.getColumnIndex(OWNER)).compareTo(owner) == 0) {
+
+                        long resolvedEventId = collision.getLong(collision.getColumnIndex(COL_TO));
+                        Cursor forum = db.rawQuery("SELECT * FROM " + EVENTS_TABLE + " WHERE " + E_KEY + "=" + resolvedEventId, null);
+                        if(forum.moveToFirst()) {
+                            WriteMessageToConversation(message, forum.getLong(forum.getColumnIndex(C_KEY)));
+                            AppController.NewEventMessage(resolvedEventId);
+                            break;
+                        }
+
+                        forum.close();
+
+                    }
+
+                }
+
+            } while(collision.moveToNext());
+
+        } else {
+
+            Cursor event = db.rawQuery("SELECT * FROM " + EVENTS_TABLE + " WHERE " + E_KEY + "=" + eventId, null);
+
+            if(event.moveToFirst()) {
+
+                WriteMessageToConversation(message, event.getLong(event.getColumnIndex(C_KEY)));
+                AppController.NewEventMessage(eventId);
+
+            } else {
+
+                Long newEvent = CreateUnownedEvent(loc, name, owner, eventId);
+                if(newEvent != null) {
+                    WriteMessageToEvent(eventId, name, owner, loc, message);
+                } else {
+                    Log.e(TAG,"An unknown error occurred trying to create event during event message writing");
+                }
+
+            }
+
+            event.close();
+
+        }
+
+        collision.close();
+
+    }
+
+
+    public void AddFriend(LocoUser user) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM " + FRIENDS_TABLE + " WHERE " + U_MAIL + "='" + user.getMail() + "'", null);
+
+        if(cursor.getCount() > 0) {
+            Log.e(getClass().toString(), "Trying to insert a user with the same mail");
+        } else {
+
+            ContentValues values = new ContentValues();
+            values.put(U_MAIL, user.getMail());
+            values.put(NAME, user.getName());
+            values.put(LOC_LAT, user.getLocation().getLatitude());
+            values.put(LOC_LON, user.getLocation().getLongitude());
+            values.put(U_SAFE, 0);
+
+            db.insert(FRIENDS_TABLE, null, values);
+            AppController.NewFriend(user.getMail());
+
+        }
+
+        cursor.close();
+
+    }
+
+    public void ValidateFriend(String mail) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.rawQuery("UPDATE " + FRIENDS_TABLE + " SET " + U_SAFE + "=1 WHERE " + U_MAIL + "='" + mail + "'", null);
+
+        AppController.FriendPonged(mail);
+
+    }
+
+
+    public List<Message> GetAllMessagesFromForum(long forumId) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        List<Message> retVal = new ArrayList<Message>();
+        Cursor forum = db.rawQuery("SELECT * FROM " + FORUMS_TABLE + " WHERE " + F_KEY + "=" + forumId, null);
+
+        if(forum.moveToFirst()) {
+            retVal = GetMessagesFromConversation(forum.getLong(forum.getColumnIndex(C_KEY)));
+        }
+
+        forum.close();
+
+        return retVal;
+
+    }
+
+    public List<Message> GetAllMessagesFromEvent(long eventId) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        List<Message> retVal = new ArrayList<Message>();
+        Cursor forum = db.rawQuery("SELECT * FROM " + EVENTS_TABLE + " WHERE " + E_KEY + "=" + eventId, null);
+
+        if(forum.moveToFirst()) {
+            retVal = GetMessagesFromConversation(forum.getLong(forum.getColumnIndex(C_KEY)));
+        }
+
+        forum.close();
+
+        return retVal;
+
+    }
+
     public List<LocoUser> GetAllFriends() {
 
         SQLiteDatabase db = this.getWritableDatabase();
@@ -339,11 +631,11 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
                 LocoUser u = new LocoUser();
                 GeoPt loc = new GeoPt();
-                loc.setLatitude(cursor.getFloat(cursor.getColumnIndex(U_LOC_LAT)));
-                loc.setLongitude(cursor.getFloat(cursor.getColumnIndex(U_LOC_LON)));
+                loc.setLatitude(cursor.getFloat(cursor.getColumnIndex(LOC_LAT)));
+                loc.setLongitude(cursor.getFloat(cursor.getColumnIndex(LOC_LON)));
                 u.setLocation(loc);
                 u.setMail(cursor.getString(cursor.getColumnIndex(U_MAIL)));
-                u.setName(cursor.getString(cursor.getColumnIndex(U_NAME)));
+                u.setName(cursor.getString(cursor.getColumnIndex(NAME)));
 
                 retVal.add(u);
 
@@ -357,25 +649,27 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
     }
 
-    public List<Forum> GetAllForums() {
+    public List<LocoForum> GetAllForums() {
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + FORUMS_TABLE, null);
-        List<Forum> retVal = new ArrayList<Forum>();
+        List<LocoForum> retVal = new ArrayList<LocoForum>();
 
         if(cursor.moveToFirst()) {
 
             do {
 
-                Forum f = new Forum();
-                f.setForumId(cursor.getLong(cursor.getColumnIndex(F_KEY)));
-                GeoPt l = new GeoPt();
-                l.setLatitude(cursor.getFloat(cursor.getColumnIndex(F_LOC_LAT)));
-                l.setLongitude(cursor.getFloat(cursor.getColumnIndex(F_LOC_LON)));
-                f.setLoc(l);
-                f.setName(cursor.getString(cursor.getColumnIndex(F_NAME)));
+                LocoForum forum = new LocoForum();
+                forum.setId(cursor.getLong(cursor.getColumnIndex(F_KEY)));
+                GeoPt location = new GeoPt();
+                location.setLatitude(cursor.getFloat(cursor.getColumnIndex(LOC_LAT)));
+                location.setLongitude(cursor.getFloat(cursor.getColumnIndex(LOC_LON)));
+                forum.setLocation(location);
+                forum.setName(cursor.getString(cursor.getColumnIndex(NAME)));
+                forum.setOwner(cursor.getString(cursor.getColumnIndex(OWNER)));
+                forum.setConversation(cursor.getLong(cursor.getColumnIndex(C_KEY)));
 
-                Cursor users = db.rawQuery("SELECT * FROM " + FORUM_USERS_TABLE + " WHERE " + F_KEY + "=" + f.getForumId(), null);
+                Cursor users = db.rawQuery("SELECT * FROM " + FORUM_USERS_TABLE + " WHERE " + F_KEY + "=" + forum.getId(), null);
                 List<LocoUser> uList = new ArrayList<LocoUser>();
 
                 if(users.moveToFirst()) {
@@ -384,7 +678,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
                         LocoUser u = new LocoUser();
                         u.setMail(users.getString(users.getColumnIndex(U_MAIL)));
-                        u.setName(users.getString(users.getColumnIndex(U_NAME)));
+                        u.setName(users.getString(users.getColumnIndex(NAME)));
                         uList.add(u);
 
 
@@ -393,15 +687,61 @@ public class DataAccessObject extends SQLiteOpenHelper {
                 }
 
                 users.close();
-                f.setUsers(uList);
-                retVal.add(f);
+                forum.setUsers(uList);
+                retVal.add(forum);
 
             } while(cursor.moveToNext());
 
         }
 
         cursor.close();
+        return retVal;
 
+    }
+
+    public List<LocoEvent> GetAllEvents() {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + EVENTS_TABLE, null);
+        List<LocoEvent> retVal = new ArrayList<LocoEvent>();
+
+        if(cursor.moveToFirst()) {
+
+            do {
+
+                LocoEvent event = new LocoEvent();
+                event.setId(cursor.getLong(cursor.getColumnIndex(E_KEY)));
+                GeoPt location = new GeoPt();
+                location.setLatitude(cursor.getFloat(cursor.getColumnIndex(LOC_LAT)));
+                location.setLongitude(cursor.getFloat(cursor.getColumnIndex(LOC_LON)));
+                event.setLocation(location);
+                event.setName(cursor.getString(cursor.getColumnIndex(NAME)));
+                event.setOwner(cursor.getString(cursor.getColumnIndex(OWNER)));
+                event.setConversation(cursor.getLong(cursor.getColumnIndex(C_KEY)));
+
+                retVal.add(event);
+
+            } while(cursor.moveToNext());
+
+        }
+
+        cursor.close();
+        return retVal;
+
+    }
+
+    public List<Message> GetMessagesFromDirectConversation(String mail) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        List<Message> retVal = new ArrayList<Message>();
+        Cursor directCov = db.rawQuery("SELECT * FROM " + DIRECT_CONVERSATIONS_TABLE + " WHERE " + M_FROM + "='" + mail + "'", null);
+
+        if(directCov.moveToFirst()) {
+            retVal = GetMessagesFromConversation(directCov.getLong(directCov.getColumnIndex(C_KEY)));
+        }
+
+        directCov.close();
         return retVal;
 
     }

@@ -5,6 +5,6 @@ package il.co.nolife.locotalk;
  */
 public interface IApiCallback<T> {
 
-    public void onComplete(T result);
+    public void Invoke(T result);
 
 }

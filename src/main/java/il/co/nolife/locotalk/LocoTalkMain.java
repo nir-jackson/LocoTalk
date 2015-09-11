@@ -40,7 +40,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        Log.i(getClass().toString(), "it has to work!");
+        Log.i(TAG, "it has to work!");
         EndpointApiCreator.initialize(null);
         setContentView(R.layout.map_activity);
         ApiHandler.Initialize(this);
@@ -112,7 +112,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
         if (mMap == null) {
 
-            Log.i(getClass().toString(),"map was Null");
+            Log.i(TAG,"map was Null");
             // Try to obtain the map from the SupportMapFragment.
             mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
@@ -172,6 +172,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             String personName = currentPerson.getDisplayName();
             String personPhoto = currentPerson.getImage().getUrl();
             String personEmail = Plus.AccountApi.getAccountName(mGoogleApiClient);
+            Log.i(TAG, currentPerson.getCurrentLocation());
             User u = new User();
             u.setFullName(personName);
             u.setMail(personEmail);
@@ -183,7 +184,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
             ApiHandler.Login(u, new IApiCallback<Boolean>() {
                 @Override
-                public void onComplete(Boolean result) {
+                public void Invoke(Boolean result) {
                     ApiHandler.SetMyLocation(fGeo);
                     runOnUiThread(new Runnable() {
                         @Override

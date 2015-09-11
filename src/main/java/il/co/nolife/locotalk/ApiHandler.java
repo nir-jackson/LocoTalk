@@ -69,10 +69,10 @@ public class ApiHandler {
             instance.user = instance.prefs.GetUser();
             instance.RegisterAsync(new IApiCallback<Void>() {
                 @Override
-                public void onComplete(Void result) {
+                public void Invoke(Void result) {
                     instance.initialized = true;
                     for (IApiCallback<Void> c : instance.delayedCalls) {
-                        c.onComplete(null);
+                        c.Invoke(null);
                     }
                 }
             });
@@ -89,7 +89,7 @@ public class ApiHandler {
 
             instance.delayedCalls.add(new IApiCallback<Void>() {
                 @Override
-                public void onComplete(Void result) {
+                public void Invoke(Void result) {
                     RetrieveMessage(messageId, onEnd);
                 }
             });
@@ -106,7 +106,7 @@ public class ApiHandler {
 
             instance.delayedCalls.add(new IApiCallback<Void>() {
                 @Override
-                public void onComplete(Void result) {
+                public void Invoke(Void result) {
                     SendGCMMessage(mail, message);
                 }
             });
@@ -137,7 +137,7 @@ public class ApiHandler {
             }
             instance.LoginAsync(user, new IApiCallback<User>() {
                 @Override
-                public void onComplete(User result) {
+                public void Invoke(User result) {
 
                     if (result != null) {
 
@@ -145,7 +145,7 @@ public class ApiHandler {
                         instance.prefs.StoreUser(result);
 
                         if(callback != null) {
-                            callback.onComplete(true);
+                            callback.Invoke(true);
                         }
 
                     } else {
@@ -157,7 +157,7 @@ public class ApiHandler {
         } else {
             instance.delayedCalls.add(new IApiCallback<Void>() {
                 @Override
-                public void onComplete(Void result) {
+                public void Invoke(Void result) {
                     Login(user, callback);
                 }
             });
@@ -172,14 +172,14 @@ public class ApiHandler {
         user.setPassword(pass);
         instance.RegisterUserAsync(user, new IApiCallback<User>() {
             @Override
-            public void onComplete(User result) {
+            public void Invoke(User result) {
                 if(result != null) {
 
                     instance.prefs.StorePassword(pass);
                     result.setPassword(pass);
                     instance.LoginAsync(result, new IApiCallback<User>() {
                         @Override
-                        public void onComplete(User result) {
+                        public void Invoke(User result) {
 
                             if(result != null) {
 
@@ -187,11 +187,11 @@ public class ApiHandler {
                                 instance.prefs.StoreUser(result);
 
                                 if(callback != null) {
-                                    callback.onComplete(true);
+                                    callback.Invoke(true);
                                 }
                             } else {
                                 if(callback != null) {
-                                    callback.onComplete(false);
+                                    callback.Invoke(false);
                                 }
                             }
 
@@ -200,7 +200,7 @@ public class ApiHandler {
 
                 } else {
                     if(callback != null) {
-                        callback.onComplete(false);
+                        callback.Invoke(false);
                     }
                 }
             }
@@ -216,7 +216,7 @@ public class ApiHandler {
 
             instance.delayedCalls.add(new IApiCallback<Void>() {
                 @Override
-                public void onComplete(Void result) {
+                public void Invoke(Void result) {
                     SendMessageToUser(message, onEnd);
                 }
             });
@@ -232,7 +232,7 @@ public class ApiHandler {
         } else {
             instance.delayedCalls.add(new IApiCallback<Void>() {
                 @Override
-                public void onComplete(Void result) {
+                public void Invoke(Void result) {
                     GetUsersAroundMe(radius, onEnd);
                 }
             });
@@ -240,36 +240,137 @@ public class ApiHandler {
 
     }
 
-    public static void CreateForum(Forum forum) {
+    public static void CreateForum(final LocoForum forum) {
 
-        StringBuilder builder = new StringBuilder();
+        if(instance.initialized) {
 
-        builder.append("{ 'type' : 'newForum', 'forumId':");
-        builder.append(forum.getForumId());
-        builder.append(", 'lat':");
-        builder.append(forum.getName());
-        builder.append("', 'lat':");
-        builder.append(forum.getLoc().getLatitude());
-        builder.append(", 'lon':");
-        builder.append(forum.getLoc().getLongitude());
-        builder.append(", 'participants': [");
-        for (LocoUser u : forum.getUsers()) {
-            builder.append("{ 'mail':'");
-            builder.append(u.getMail());
+            StringBuilder builder = new StringBuilder();
+
+            builder.append("{ 'type' : 'newForum', 'forumId':");
+            builder.append(forum.getId());
+            builder.append(", 'owner':");
+            builder.append(forum.getOwner());
             builder.append("', 'name':'");
-            builder.append(u.getName());
-            builder.append("', 'icon':'");
-            builder.append(u.getIcon());
-            builder.append("' }, ");
-        }
-        builder.append("]");
-        builder.append(" }");
+            builder.append(forum.getName());
+            builder.append("', 'lat':");
+            builder.append(forum.getLocation().getLatitude());
+            builder.append(", 'lon':");
+            builder.append(forum.getLocation().getLongitude());
+            builder.append(", 'participants': [");
+            for (LocoUser u : forum.getUsers()) {
+                builder.append("{ 'mail':'");
+                builder.append(u.getMail());
+                builder.append("', 'name':'");
+                builder.append(u.getName());
+                builder.append("', 'icon':'");
+                builder.append(u.getIcon());
+                builder.append("' }, ");
+            }
+            builder.append("] }");
 
-        String message = "{ 'type' : 'newForum', "
-                + "'forumId':" + forum.getForumId() +", "
-                + "'name':'" + forum.getName() + "', "
-                + "'lat':" + forum.getLoc().getLatitude() + ", "
-                + "'lon':" + forum.getLoc().getLongitude() + ", " + " }";
+            String json = builder.toString();
+
+            for (LocoUser user : forum.getUsers()) {
+                instance.SendGCMMessageAsync(user.getMail(), json);
+            }
+
+        } else {
+
+            instance.delayedCalls.add(new IApiCallback<Void>() {
+                @Override
+                public void Invoke(Void result) {
+                    CreateForum(forum);
+                }
+            });
+
+        }
+
+    }
+
+    public static void SendForumMessage(final LocoForum forum, final Message message) {
+
+        if(instance.initialized) {
+
+            StringBuilder builder = new StringBuilder();
+
+            builder.append("{ 'type' : 'forumMessage', 'forumId':");
+            builder.append(forum.getId());
+            builder.append(", 'owner':'");
+            builder.append(forum.getOwner());
+            builder.append("', 'message': { 'from':'");
+            builder.append(message.getFrom());
+            builder.append("', 'time':");
+            builder.append(new Date().getTime());
+            builder.append(", 'content':'");
+            builder.append(message.getContnet());
+            builder.append("' } }");
+
+            String json = builder.toString();
+
+            for (LocoUser user : forum.getUsers()) {
+                instance.SendGCMMessageAsync(user.getMail(), json);
+            }
+
+        } else {
+
+            instance.delayedCalls.add(new IApiCallback<Void>() {
+                @Override
+                public void Invoke(Void result) {
+                    SendForumMessage(forum, message);
+                }
+            });
+
+        }
+
+    }
+
+    public static void SendEventMessage(final LocoEvent event, final Message message, final int radius) {
+
+        if(instance.initialized) {
+
+            StringBuilder builder = new StringBuilder();
+
+            builder.append("{ 'type' : 'eventMessage', 'eventId':");
+            builder.append(event.getId());
+            builder.append(", 'owner':'");
+            builder.append(event.getOwner());
+            builder.append("', 'lat':");
+            builder.append(event.getLocation().getLatitude());
+            builder.append(", 'lon':");
+            builder.append(event.getLocation().getLongitude());
+            builder.append(", 'name':'");
+            builder.append(event.getName());
+            builder.append("', 'message': { 'from':'");
+            builder.append(message.getFrom());
+            builder.append("', 'time':");
+            builder.append(new Date().getTime());
+            builder.append(", 'content':'");
+            builder.append(message.getContnet());
+            builder.append("' } }");
+
+            final String json = builder.toString();
+
+            instance.GetUsersAroundPoint(radius, event.getLocation().getLatitude(), event.getLocation().getLongitude(), new IApiCallback<List<UserAroundMe>>() {
+                @Override
+                public void Invoke(List<UserAroundMe> result) {
+                    if(result != null) {
+                        for (UserAroundMe user : result) {
+                            instance.SendGCMMessageAsync(user.getMail(), json);
+                        }
+                    }
+                }
+            });
+
+        } else {
+
+            instance.delayedCalls.add(new IApiCallback<Void>() {
+                @Override
+                public void Invoke(Void result) {
+                    SendEventMessage(event, message, radius);
+                }
+            });
+
+        }
 
     }
 
@@ -321,7 +422,7 @@ public class ApiHandler {
             protected void onPostExecute(Boolean success) {
 
                 if(onEnd != null) {
-                    onEnd.onComplete(null);
+                    onEnd.Invoke(null);
                 }
 
             }
@@ -377,12 +478,12 @@ public class ApiHandler {
                 try {
                     User u = api.register(user).execute();
                     if(onEnd != null) {
-                        onEnd.onComplete(u);
+                        onEnd.Invoke(u);
                     }
                 } catch (IOException e) {
                     Log.e(getClass().toString(), e.getMessage());
                     if(onEnd != null){
-                        onEnd.onComplete(null);
+                        onEnd.Invoke(null);
                     }
                 }
 
@@ -404,12 +505,12 @@ public class ApiHandler {
                 try {
                     User u = api.login(user.getMail(), user.getPassword(), user.getRegistrationId()).execute();
                     if(onEnd != null) {
-                        onEnd.onComplete(u);
+                        onEnd.Invoke(u);
                     }
                 }catch (Exception e) {
                     Log.e(getClass().toString(), e.getMessage());
                     if(onEnd != null) {
-                        onEnd.onComplete(null);
+                        onEnd.Invoke(null);
                     }
                 }
                 return null;
@@ -432,12 +533,12 @@ public class ApiHandler {
                 try {
                     api.sendMessage(newMessage).execute();
                     if(onEnd != null) {
-                        onEnd.onComplete(true);
+                        onEnd.Invoke(true);
                     }
                 } catch(IOException e) {
                     Log.e(getClass().toString(), e.getMessage());
                     if(onEnd != null) {
-                        onEnd.onComplete(false);
+                        onEnd.Invoke(false);
                     }
                 }
 
@@ -459,12 +560,12 @@ public class ApiHandler {
                 try {
                     api.reportUserLocation(user.getMail(), location).execute();
                     if(onEnd != null) {
-                        onEnd.onComplete(true);
+                        onEnd.Invoke(true);
                     }
                 } catch(IOException e) {
                     Log.e(getClass().toString(), "Error reporting user location: " + e.getMessage());
                     if(onEnd != null) {
-                        onEnd.onComplete(false);
+                        onEnd.Invoke(false);
                     }
                 }
 
@@ -486,12 +587,12 @@ public class ApiHandler {
                 try {
                     api.sendMessage(message).execute();
                     if(onEnd != null) {
-                        onEnd.onComplete(true);
+                        onEnd.Invoke(true);
                     }
                 } catch(IOException e) {
                     Log.e(getClass().toString(), e.getMessage());
                     if(onEnd != null) {
-                        onEnd.onComplete(false);
+                        onEnd.Invoke(false);
                     }
                 }
 
@@ -512,12 +613,12 @@ public class ApiHandler {
                     GeoPt loc = user.getLocation().getPoint();
                     List<UserAroundMe> retVal = api.getUsersAroundMe(loc.getLongitude(), loc.getLatitude(), radius, user.getMail()).execute().getItems();
                     if(onEnd != null) {
-                        onEnd.onComplete(retVal);
+                        onEnd.Invoke(retVal);
                     }
                 } catch(IOException e) {
-                    Log.e(getClass().toString(), "Failed to get users around me .... fucking shit");
+                    Log.e(getClass().toString(), "Failed to get users around me .... fucking shit: " + e.getMessage());
                     if(onEnd != null) {
-                        onEnd.onComplete(null);
+                        onEnd.Invoke(null);
                     }
                 }
                 return null;
@@ -527,7 +628,34 @@ public class ApiHandler {
 
     }
 
-    void SendForumMessage(final Forum forum, final String message, final IApiCallback<Boolean> onEnd) {
+    void GetUsersAroundPoint(final int radius, final float lat, final float lon, final IApiCallback<List<UserAroundMe>> callback) {
+
+        new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... params) {
+
+                try {
+
+                    List<UserAroundMe> retVal = api.getUsersAroundMe(lon, lat, radius, user.getMail()).execute().getItems();
+                    if(callback!= null) {
+                        callback.Invoke(retVal);
+                    }
+
+                } catch(IOException e) {
+                    Log.e(getClass().toString(), "Failed to get users around me .... fucking shit: " + e.getMessage());
+                    if(callback != null) {
+                        callback.Invoke(null);
+                    }
+                }
+                return null;
+
+            }
+        }.execute();
+
+    }
+
+    void SendForumMessage(final LocoForum forum, final String message, final IApiCallback<Boolean> onEnd) {
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -545,12 +673,12 @@ public class ApiHandler {
                         api.sendGcmMessage(u.getMail(), sentMessage);
                     }
                     if(onEnd != null) {
-                        onEnd.onComplete(true);
+                        onEnd.Invoke(true);
                     }
                 } catch (IOException e) {
                     Log.e(getClass().toString(), "Could not send forum message");
                     if(onEnd != null) {
-                        onEnd.onComplete(false);
+                        onEnd.Invoke(false);
                     }
                 }
 
@@ -560,7 +688,7 @@ public class ApiHandler {
 
     }
 
-    void SendCreateForum(final Forum forum, final IApiCallback<Boolean> onEnd) {
+    void SendCreateForum(final LocoForum forum, final IApiCallback<Boolean> onEnd) {
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -585,12 +713,12 @@ public class ApiHandler {
                 try {
                     Message m = api.getMessage(messageId).execute();
                     if(onEnd != null) {
-                        onEnd.onComplete(m);
+                        onEnd.Invoke(m);
                     }
                 } catch (IOException e) {
                     Log.e(getClass().toString(), e.getMessage());
                     if(onEnd != null) {
-                        onEnd.onComplete(null);
+                        onEnd.Invoke(null);
                     }
                 }
                 return null;

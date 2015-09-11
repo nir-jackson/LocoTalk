@@ -1,0 +1,30 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="6dip" >
+    <!-- android:layout_height="?android:attr/listPreferredItemHeight" -->
+
+
+    <ImageView
+        android:id="@+id/chatItemIcon"
+        android:layout_width="60dip"
+        android:layout_height="100dip"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="6dip"
+        android:contentDescription="TODO"
+        android:src="@drawable/question_man" />
+
+    <TextView
+        android:id="@+id/chatItemContent"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="10dip"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@id/icon"
+        android:ellipsize="marquee"
+        android:text="sdfsdsdfasdfg sdfkgdfj df ldsf gksdf lskdf jsdlfk;jsdlkgj sdf;lkj l;j lk;jlkjls kdj slk;gj ;ldsfkjf"
+        android:textSize="16sp" />
+
+</RelativeLayout>
