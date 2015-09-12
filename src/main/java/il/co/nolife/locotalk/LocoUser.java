@@ -44,7 +44,10 @@ public class LocoUser {
         name = user.getDisplayName();
         location = user.getLocation();
         safe = false;
-        icon = "";
+        icon = (String) user.get("imageUrl");
+        if(icon == null) {
+            icon = "";
+        }
 
     }
 
