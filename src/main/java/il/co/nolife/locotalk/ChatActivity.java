@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -27,6 +28,7 @@ public class ChatActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.basic_chat_activity);
 
         list = (ListView) findViewById(R.id.messagesList);
@@ -47,10 +49,10 @@ public class ChatActivity extends Activity {
                 m.setContnet(content.getText().toString());
                 m.setTo(mail.getText().toString());
                 m.setFrom(ApiHandler.GetUser().getMail());
-                Log.i(getClass().toString(),m.toString());
+                Log.i(getClass().toString(), m.toString());
                 ApiHandler.SendMessageToUser(m, null);
                 listm.add(m);
-
+                adapter.notifyDataSetChanged();
             }
         });
 //        if(ex > -1) {

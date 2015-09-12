@@ -19,12 +19,11 @@
         android:id="@+id/chatItemContent"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="10dip"
-        android:layout_alignParentRight="true"
-        android:layout_toRightOf="@id/icon"
         android:ellipsize="marquee"
         android:text="sdfsdsdfasdfg sdfkgdfj df ldsf gksdf lskdf jsdlfk;jsdlkgj sdf;lkj l;j lk;jlkjls kdj slk;gj ;ldsfkjf"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/chatItemIcon"
+        android:layout_marginStart="69dp" />
 
 </RelativeLayout>
