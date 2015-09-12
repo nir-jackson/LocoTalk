@@ -8,10 +8,11 @@
         android:ems="10"
         android:id="@+id/chat_title"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:textSize="40sp"
-        android:gravity= "center" />
+        android:gravity= "center"
+        android:layout_alignBottom="@+id/profile_image"
+        android:layout_toEndOf="@+id/profile_image" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -26,9 +27,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/messagesList"
-        android:layout_below="@+id/chat_title"
         android:layout_alignParentStart="true"
-        android:layout_above="@+id/message_content" />
+        android:layout_above="@+id/message_content"
+        android:layout_below="@+id/add_friend" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
@@ -37,6 +38,29 @@
         android:text="Send"
         android:id="@+id/sendbutton"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/messagesList" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/profile_image"
+        android:src="@drawable/question_man"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add To Friends"
+        android:id="@+id/add_friend"
+        android:layout_alignEnd="@+id/chat_title"
+        android:layout_alignParentEnd="false"
+        android:background="#339dff"
+        android:layout_below="@+id/chat_title"
+        android:layout_alignParentStart="true"
+        android:height="40dp"
+        />
 
 </RelativeLayout>

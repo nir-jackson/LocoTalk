@@ -2,11 +2,14 @@ package il.co.nolife.locotalk;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -78,9 +81,29 @@ public class ChatActivity extends Activity {
         final DataAccessObject dao = new DataAccessObject(getApplicationContext());
         String mail = intent.getStringExtra("from");
         final User user = AppController.GetUserFromCache(mail);
+        Log.i(getClass().toString(), user.toString());
+        String tempurl;
+        if(user.getImageUrl().indexOf("sz=50")!= -1){
+            tempurl = user.getImageUrl().replace("sz=50","sz=400");
+        }else{
+            tempurl = user.getImageUrl().replace("sz=150","sz=400");
+        }
 
+        Log.i(getClass().toString(),tempurl);
         title.setText(user.getFullName());
+        final ImageView imageView = (ImageView)findViewById(R.id.profile_image);
 
+        AppController.GetImage(tempurl, new IApiCallback<Bitmap>() {
+            @Override
+            public void Invoke(final Bitmap result) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        imageView.setImageBitmap(result);
+                    }
+                });
+            }
+        });
         contentList = dao.GetMessagesFromDirectConversation(mail);
         adapter = new ChatListAdapter(getApplicationContext(), contentList, this);
         list.setAdapter(adapter);
@@ -139,7 +162,7 @@ public class ChatActivity extends Activity {
     }
 
     protected void onStop() {
-
+        super.onStop();
         if(messageCallback != null) {
             AppController.RemovePrivateMessageListener(messageCallback);
         }
@@ -153,7 +176,7 @@ public class ChatActivity extends Activity {
     }
 
     protected void onStart() {
-
+        super.onStart();
         if(messageCallback != null) {
             AppController.AddPrivateMessageListener(messageCallback);
         }

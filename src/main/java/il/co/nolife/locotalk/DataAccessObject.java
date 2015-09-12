@@ -54,8 +54,8 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
     public static final String EVENT_COLLISIONS_TABLE = "eventCollisions";
     public static final String FORUM_COLLISIONS_TABLE = "forumCollisions";
-    public static final String COL_FROM = "from";
-    public static final String COL_TO = "to";
+    public static final String COL_FROM = "colFrom";
+    public static final String COL_TO = "colTo";
 
     Context context;
 

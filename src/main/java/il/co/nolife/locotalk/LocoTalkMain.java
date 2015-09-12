@@ -149,12 +149,18 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                     .getMap();
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
-                mMap.setInfoWindowAdapter(new LocoInfoWindowAdapter(this, this));
+                //mMap.setInfoWindowAdapter(new LocoInfoWindowAdapter(this, this));
                 mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(Marker marker) {
-                        MarkerClicked(marker);
+                        //MarkerClicked(marker);
                         return false;
+                    }
+                });
+                mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+                    @Override
+                    public void onInfoWindowClick(Marker marker) {
+                        MarkerClicked(marker);
                     }
                 });
             }
@@ -164,6 +170,15 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     }
 
     void MarkerClicked(Marker marker){
+        LocoUser user = currentUserMarkers.get(marker);
+        if(user != null){
+            Intent chatIntent = new Intent(this, ChatActivity.class);
+            chatIntent.putExtra("type", EChatType.PRIVATE.ordinal());
+            chatIntent.putExtra("from", user.getMail());
+            startActivity(chatIntent);
+        }else{
+            Log.i(TAG,"user is null");
+        }
 
         // Log.i(TAG, "pressed Marker, suppose to open new activity");
         // Intent intent = new Intent(this,ChatActivity.class);
