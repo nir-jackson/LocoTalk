@@ -10,6 +10,7 @@ import android.provider.Settings;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.GeoPt;
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.UserAroundMe;
@@ -55,6 +56,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
         super.onCreate(savedInstanceState);
         Log.i(TAG, "it has to work!");
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         EndpointApiCreator.initialize(null);
         setContentView(R.layout.map_activity);
         ApiHandler.Initialize(this);
@@ -251,64 +253,76 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     }
 
     public void LocationServiceEnabled() {
-
+        Log.i(TAG,"LocationServiceEnabled function");
         backgroundTask = new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
 
                 while(true) {
-
-                    final GeoPt myLoc = new GeoPt();
-
-                    Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-                    myLoc.setLatitude((float) mLastLocation.getLatitude());
-                    myLoc.setLongitude((float) mLastLocation.getLongitude());
-
-                    myUser.setLocation(myLoc);
-                    ApiHandler.SetMyLocation(myLoc);
-                    myMarker.setPosition(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()));
-
-                    ApiHandler.GetUsersAroundMe(10000, new IApiCallback<List<UserAroundMe>>() {
+                    runOnUiThread(new Runnable() {
                         @Override
-                        public void Invoke(List<UserAroundMe> result) {
-                            if (result != null) {
+                        public void run() {
 
-                                if (currentUserMarkers != null) {
-                                    for (Map.Entry<Marker, LocoUser> p : currentUserMarkers.entrySet()) {
-                                        p.getKey().remove();
-                                    }
-                                }
-                                currentUserMarkers = new HashMap<Marker, LocoUser>();
+                            Log.i(TAG,"stam bdika");
+                            final GeoPt myLoc = new GeoPt();
 
-                                for (UserAroundMe u : result) {
+                            Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+                            myLoc.setLatitude((float) mLastLocation.getLatitude());
+                            myLoc.setLongitude((float) mLastLocation.getLongitude());
 
-                                    if (u.getMail().compareTo(myUser.getMail()) != 0) {
+                            myUser.setLocation(myLoc);
+                            ApiHandler.SetMyLocation(myLoc);
 
-                                        LocoUser nUser = new LocoUser(u);
-                                        AppController.AddUserToCache(nUser.toUser());
-                                        Date seenDate = new Date(u.getLastSeen().getValue());
-                                        Date now = new Date();
-                                        Date checkDate = new Date(now.getTime() - 300000); // Current minus 5 minutes
-                                        if (seenDate.after(checkDate)) {
+                            if (myMarker == null) {
+                                myMarker = mMap.addMarker(new MarkerOptions()
+                                        .title(myUser.getName())
+                                        .position(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()))
+                                        .icon(personMarkerIcon));
+                            }else {
+                                myMarker.setPosition(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()));
+                            }
+                            ApiHandler.GetUsersAroundMe(10000, new IApiCallback<List<UserAroundMe>>() {
+                                @Override
+                                public void Invoke(List<UserAroundMe> result) {
+                                    if (result != null) {
+                                        Log.i(TAG,result.toString());
+                                        if (currentUserMarkers != null) {
+                                            for (Map.Entry<Marker, LocoUser> p : currentUserMarkers.entrySet()) {
+                                                p.getKey().remove();
+                                            }
+                                        }
+                                        currentUserMarkers = new HashMap<Marker, LocoUser>();
 
-                                            Marker newMarker = mMap.addMarker(new MarkerOptions()
-                                                    .position(new LatLng(nUser.getLocation().getLatitude(), nUser.getLocation().getLongitude()))
-                                                    .title(nUser.getName())
-                                                    .icon(personMarkerIcon));
-                                            currentUserMarkers.put(newMarker, nUser);
+                                        for (UserAroundMe u : result) {
+
+                                            if (u.getMail().compareTo(myUser.getMail()) != 0) {
+
+                                                LocoUser nUser = new LocoUser(u);
+                                                AppController.AddUserToCache(nUser.toUser());
+                                                Date seenDate = new Date(u.getLastSeen().getValue());
+                                                Date now = new Date();
+                                                Date checkDate = new Date(now.getTime() - 300000); // Current minus 5 minutes
+                                                if (seenDate.after(checkDate)) {
+
+                                                    Marker newMarker = mMap.addMarker(new MarkerOptions()
+                                                            .position(new LatLng(nUser.getLocation().getLatitude(), nUser.getLocation().getLongitude()))
+                                                            .title(nUser.getName())
+                                                            .icon(personMarkerIcon));
+                                                    currentUserMarkers.put(newMarker, nUser);
+
+                                                }
+
+                                            }
 
                                         }
 
                                     }
-
                                 }
-
-                            }
+                            });
                         }
                     });
-
                     try {
-                        Thread.sleep(30000, 0);
+                        Thread.sleep(3000, 0);
                     } catch (InterruptedException e) {
                         Log.e("TickerThread", e.getMessage());
                         e.printStackTrace();
