@@ -636,6 +636,10 @@ public class DataAccessObject extends SQLiteOpenHelper {
                 u.setLocation(loc);
                 u.setMail(cursor.getString(cursor.getColumnIndex(U_MAIL)));
                 u.setName(cursor.getString(cursor.getColumnIndex(NAME)));
+                int safe = cursor.getInt(cursor.getColumnIndex(U_SAFE));
+                if(safe != 0) {
+                    u.setSafe(true);
+                }
 
                 retVal.add(u);
 

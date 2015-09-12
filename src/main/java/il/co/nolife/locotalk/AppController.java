@@ -210,15 +210,46 @@ public class AppController {
 
     }
 
-    public static void AddToUserCache(User user) {
+    public static void AddUserToCache(User user) {
 
-        instance.userCache.put(user.getMail(), user);
-        GetImage(user.getImageUrl(), null);
+        if(!instance.userCache.containsKey(user.getMail())) {
+
+            instance.userCache.put(user.getMail(), user);
+            GetImage(user.getImageUrl(), null);
+
+        }
+
+    }
+
+    public static void AddUserToCache(User[] users) {
+
+        for (User u : users) {
+            if(!instance.userCache.containsKey(u.getMail())) {
+                instance.userCache.put(u.getMail(), u);
+                GetImage(u.getImageUrl(), null);
+            }
+        }
+
+    }
+
+    public static void AddUserToCache(List<User> users) {
+
+        for (User u : users) {
+            if(!instance.userCache.containsKey(u.getMail())) {
+                instance.userCache.put(u.getMail(), u);
+                GetImage(u.getImageUrl(), null);
+            }
+        }
 
     }
 
     public static User GetUserFromCache(String mail) {
-        return instance.userCache.get(mail);
+        User retVal = instance.userCache.get(mail);
+        if(retVal != null) {
+            return retVal;
+        } else {
+            return new User();
+        }
     }
 
 }

@@ -2,6 +2,7 @@ package il.co.nolife.locotalk;
 
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.GeoPt;
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.User;
+import com.appspot.enhanced_cable_88320.aroundmeapi.model.UserAroundMe;
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.UserLocation;
 
 /**
@@ -9,6 +10,7 @@ import com.appspot.enhanced_cable_88320.aroundmeapi.model.UserLocation;
  */
 public class LocoUser {
 
+    String regId;
     String mail;
     String name;
     String icon;
@@ -25,6 +27,7 @@ public class LocoUser {
 
     public LocoUser(User user) {
 
+        regId = user.getRegistrationId();
         mail = user.getMail();
         name = user.getFullName();
         icon = user.getImageUrl();
@@ -33,10 +36,22 @@ public class LocoUser {
 
     }
 
+    public LocoUser(UserAroundMe user) {
+
+        regId = "Nothing";
+        mail = user.getMail();
+        name = user.getDisplayName();
+        location = user.getLocation();
+        safe = false;
+        icon = "";
+
+    }
+
     public User toUser() {
 
         User user = new User();
 
+        user.setRegistrationId(regId);
         user.setMail(mail);
         user.setFullName(name);
         user.setImageUrl(icon);
@@ -44,6 +59,14 @@ public class LocoUser {
 
         return user;
 
+    }
+
+    public String getRegId() {
+        return regId;
+    }
+
+    public void setRegId(String regId) {
+        this.regId = regId;
     }
 
     public String getMail() {

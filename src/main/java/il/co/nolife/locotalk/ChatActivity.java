@@ -37,7 +37,6 @@ public class ChatActivity extends Activity {
         adapter = new ChatListAdapter(this,listm,this);
         list.setAdapter(adapter);
 
-
         mail = (EditText)findViewById(R.id.to_email);
         content = (EditText)findViewById(R.id.message_content);
         Button b = (Button)findViewById(R.id.sendbutton);
