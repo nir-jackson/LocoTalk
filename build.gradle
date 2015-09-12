@@ -1,19 +1,21 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+    }
     compileSdkVersion 21
     buildToolsVersion "23.0.1"
-
     defaultConfig {
         applicationId "il.co.nolife.locotalk"
         minSdkVersion 19
         targetSdkVersion 23
     }
-
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt', 'proguard-google-api-client.txt'
+        }
+        debug {
         }
     }
 }

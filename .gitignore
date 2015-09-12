@@ -42,3 +42,5 @@ build/
 Network Trash Folder
 Temporary Items
 .apdisk
+src/main/res/values/google_maps_api.xml
+google-services.json

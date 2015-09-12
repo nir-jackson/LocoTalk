@@ -3,7 +3,6 @@ package il.co.nolife.locotalk;
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.GeoPt;
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.User;
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.UserAroundMe;
-import com.appspot.enhanced_cable_88320.aroundmeapi.model.UserLocation;
 
 /**
  * Created by Victor Belski on 9/10/2015.
@@ -22,6 +21,8 @@ public class LocoUser {
         name = "";
         icon = "";
         location = new GeoPt();
+        location.setLatitude(0f);
+        location.setLongitude(0f);
         safe = false;
     }
 
@@ -55,7 +56,6 @@ public class LocoUser {
         user.setMail(mail);
         user.setFullName(name);
         user.setImageUrl(icon);
-        user.setLocation(new UserLocation().setPoint(location));
 
         return user;
 
@@ -107,5 +107,10 @@ public class LocoUser {
 
     public void setSafe(Boolean safe) {
         this.safe = safe;
+    }
+
+    @Override
+    public String toString() {
+        return "{ regid:" + regId + ", mail:" + mail + ", name:" + name + ", icon:" + icon + ", location:" + ((location == null) ?("null"):(location.toString())) + ", safe:" + safe + " }";
     }
 }

@@ -17,9 +17,7 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.api.client.util.DateTime;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.URLEncoder;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +27,8 @@ import java.util.List;
  * Handles all operation involving the AroundMeApi
  */
 public class ApiHandler {
+
+    public static final String TAG = "ApiHandler";
 
     static {
         instance = new ApiHandler();
@@ -74,6 +74,8 @@ public class ApiHandler {
                     for (IApiCallback<Void> c : instance.delayedCalls) {
                         c.Invoke(null);
                     }
+                    Log.i(getClass().toString(), "Successfully initialized");
+                    instance.delayedCalls = new ArrayList<IApiCallback<Void>>();
                 }
             });
 
@@ -146,6 +148,8 @@ public class ApiHandler {
 
     public static void Login(final User user, final IApiCallback<Boolean> callback) {
 
+        Log.i(instance.getClass().toString(), "Trying to login");
+
         if(instance.initialized) {
 
             String pass = "abcde";//instance.prefs.GetPassword();
@@ -164,11 +168,14 @@ public class ApiHandler {
                         instance.user = result;
                         instance.prefs.StoreUser(result);
 
-                        if(callback != null) {
+                        if (callback != null) {
                             callback.Invoke(true);
+                        } else {
+                            Log.e(TAG, "Callback was null on login");
                         }
 
                     } else {
+                        Log.i(TAG, "Login falied, atempting to resgister");
                         instance.Register(user, callback);
                     }
 
@@ -181,50 +188,68 @@ public class ApiHandler {
                     Login(user, callback);
                 }
             });
+            Log.i(instance.getClass().toString(), "Registering delayed Login");
         }
 
     }
 
-    void Register(User user, final IApiCallback<Boolean> callback) {
+    void Register(final User user, final IApiCallback<Boolean> callback) {
 
-        //SecureRandom random = new SecureRandom();
-        final String pass = "abcde";
-        user.setPassword(pass);
-        instance.RegisterUserAsync(user, new IApiCallback<User>() {
-            @Override
-            public void Invoke(User result) {
-                if(result != null) {
+        if(instance.initialized) {
+            //SecureRandom random = new SecureRandom();
+            final String pass = "abcde";
+            user.setPassword(pass);
+            instance.RegisterUserAsync(user, new IApiCallback<User>() {
+                @Override
+                public void Invoke(User result) {
+                    if (result != null) {
 
-                    instance.prefs.StorePassword(pass);
-                    result.setPassword(pass);
-                    instance.LoginAsync(result, new IApiCallback<User>() {
-                        @Override
-                        public void Invoke(User result) {
+                        instance.prefs.StorePassword(pass);
+                        result.setPassword(pass);
+                        instance.LoginAsync(result, new IApiCallback<User>() {
+                            @Override
+                            public void Invoke(User result) {
 
-                            if(result != null) {
+                                if (result != null) {
 
-                                instance.user = result;
-                                instance.prefs.StoreUser(result);
+                                    instance.user = result;
+                                    instance.prefs.StoreUser(result);
 
-                                if(callback != null) {
-                                    callback.Invoke(true);
+                                    if (callback != null) {
+                                        callback.Invoke(true);
+                                    } else {
+                                        Log.e(TAG, "Callback was null on Register");
+                                    }
+                                } else {
+                                    if (callback != null) {
+                                        callback.Invoke(false);
+                                    } else {
+                                        Log.e(TAG, "Callback was null on register");
+                                    }
                                 }
-                            } else {
-                                if(callback != null) {
-                                    callback.Invoke(false);
-                                }
+
                             }
+                        });
 
+                    } else {
+                        if (callback != null) {
+                            callback.Invoke(false);
+                        } else {
+                            Log.e(TAG, "Callback was null on registar");
                         }
-                    });
-
-                } else {
-                    if(callback != null) {
-                        callback.Invoke(false);
                     }
                 }
-            }
-        });
+            });
+
+        } else {
+            instance.delayedCalls.add(new IApiCallback<Void>() {
+                @Override
+                public void Invoke(Void result) {
+                    Register(user, callback);
+                    Log.i(instance.getClass().toString(), "Registering delayed Register");
+                }
+            });
+        }
 
     }
 
@@ -245,15 +270,15 @@ public class ApiHandler {
 
     }
 
-    public static void GetUsersAroundMe(final int radius, final IApiCallback<List<UserAroundMe>> onEnd) {
+    public static void GetUsersAroundMe(final LocoUser user, final int radius, final IApiCallback<List<UserAroundMe>> onEnd) {
 
         if(instance.initialized) {
-            instance.GetUsersAroundMeAsync(radius, onEnd);
+            instance.GetUsersAroundMeAsync(user, radius, onEnd);
         } else {
             instance.delayedCalls.add(new IApiCallback<Void>() {
                 @Override
                 public void Invoke(Void result) {
-                    GetUsersAroundMe(radius, onEnd);
+                    GetUsersAroundMe(user, radius, onEnd);
                 }
             });
         }
@@ -496,14 +521,19 @@ public class ApiHandler {
             protected Boolean doInBackground(Void... params) {
 
                 try {
+                    Log.i(TAG, user.toString());
                     User u = api.register(user).execute();
                     if(onEnd != null) {
                         onEnd.Invoke(u);
+                    } else {
+                        Log.e(TAG, "Callback in RegisterUserAsync is null");
                     }
                 } catch (IOException e) {
                     Log.e(getClass().toString() + ":registerAsync:",  e.getMessage());
                     if(onEnd != null){
                         onEnd.Invoke(null);
+                    } else {
+                        Log.e(TAG, "Callback in RegisterUserAsync is null");
                     }
                 }
 
@@ -524,15 +554,22 @@ public class ApiHandler {
 
                 try {
 
+                    Log.i(TAG, "User login comencing");
+
                     User u = api.login(user.getMail(), user.getPassword(), user.getRegistrationId()).execute();
 
+                    Log.i(TAG, "User login returned");
                     if(onEnd != null) {
                         onEnd.Invoke(u);
+                    } else {
+                        Log.e(TAG, "Callback in LoginAsync is null");
                     }
                 }catch (Exception e) {
                     Log.e(getClass().toString() + ":LoginAsync:", e.getMessage());
                     if(onEnd != null) {
                         onEnd.Invoke(null);
+                    } else {
+                        Log.e(TAG, "Callback in LoginAsync is null");
                     }
                 }
                 return null;
@@ -624,7 +661,7 @@ public class ApiHandler {
 
     }
 
-    void GetUsersAroundMeAsync(final int radius, final IApiCallback<List<UserAroundMe>> onEnd) {
+    void GetUsersAroundMeAsync(final LocoUser me, final int radius, final IApiCallback<List<UserAroundMe>> onEnd) {
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -632,8 +669,7 @@ public class ApiHandler {
             protected Void doInBackground(Void... params) {
 
                 try {
-                    GeoPt loc = user.getLocation().getPoint();
-                    List<UserAroundMe> retVal = api.getUsersAroundMe(loc.getLongitude(), loc.getLatitude(), radius, user.getMail()).execute().getItems();
+                    List<UserAroundMe> retVal = api.getUsersAroundMe(me.getLocation().getLongitude(), me.getLocation().getLatitude(), radius, me.getMail()).execute().getItems();
                     if(onEnd != null) {
                         onEnd.Invoke(retVal);
                     }
@@ -763,6 +799,42 @@ public class ApiHandler {
                 return null;
             }
         }.execute();
+
+    }
+
+    public static void GetAllUsers(final String mail, final IApiCallback<List<UserAroundMe>> callback) {
+
+        if(instance.initialized) {
+
+            new AsyncTask<Void, Void, Void>() {
+
+                @Override
+                protected Void doInBackground(Void... params) {
+
+                    try {
+
+                        List<UserAroundMe> result = instance.api.getAllUsers(mail).execute().getItems();
+                        callback.Invoke(result);
+
+                    } catch (IOException e) {
+                        Log.e(TAG, "Could not retrieve users");
+                    }
+
+                    return null;
+                }
+
+            }.execute();
+
+        } else {
+
+            instance.delayedCalls.add(new IApiCallback<Void>() {
+                @Override
+                public void Invoke(Void result) {
+                    GetAllUsers(mail, callback);
+                }
+            });
+
+        }
 
     }
 
