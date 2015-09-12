@@ -156,7 +156,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
     }
 
-    public void WriteMessageToConversation(Message message, long convId) {
+    void WriteMessageToConversation(Message message, long convId) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -200,11 +200,11 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
     }
 
-    public void WriteMessageFromUser(Message message) {
+    public void WriteMessageToUserConversation(Message message, Boolean myMessage) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        Cursor conversation = db.rawQuery("SELECT * FROM " + DIRECT_CONVERSATIONS_TABLE + " WHERE " + M_FROM + "='" + message.getFrom() + "'", null);
+        Cursor conversation = db.rawQuery("SELECT * FROM " + DIRECT_CONVERSATIONS_TABLE + " WHERE " + M_FROM + "='" + ((myMessage)?(message.getTo()):(message.getFrom())) + "'", null);
 
         if(conversation.getColumnCount() > 0) {
 
@@ -217,7 +217,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
             WriteMessageToConversation(message, convId);
 
             ContentValues newUserConv = new ContentValues();
-            newUserConv.put(M_FROM, message.getFrom());
+            newUserConv.put(M_FROM, ((myMessage)?(message.getTo()):(message.getFrom())));
             newUserConv.put(C_KEY, convId);
             db.insert(DIRECT_CONVERSATIONS_TABLE, null, newUserConv);
 
@@ -225,7 +225,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         conversation.close();
 
-        AppController.NewPrivateMessage(message.getFrom());
+        AppController.NewPrivateMessage(message);
 
     }
 

@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks {
+public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, IMarkerLocoUserGetter {
 
     private static final String TAG = "LocoTalkMain";
     private static final int RC_SIGN_IN = 0;
@@ -43,7 +43,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
     HashMap<Marker, LocoUser> currentUserMarkers;
     Marker myMarker;
-    LocoUser myUser;
+    // LocoUser myUser;
 
     BitmapDescriptor personMarkerIcon;
 
@@ -149,28 +149,17 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                     .getMap();
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
-                setUpMap();
+                mMap.setInfoWindowAdapter(new LocoInfoWindowAdapter(this, this));
+                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        MarkerClicked(marker);
+                        return false;
+                    }
+                });
             }
 
         }
-
-    }
-
-    /**
-     * This is where we can add markers or lines, add listeners or move the camera. In this case, we
-     * just add a marker near Africa.
-     * <p/>
-     * This should only be called once and when we are sure that {@link #mMap} is not null.
-     */
-    private void setUpMap() {
-
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                MarkerClicked(marker);
-                return false;
-            }
-        });
 
     }
 
@@ -197,7 +186,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             String personPhoto = currentPerson.getImage().getUrl();
             String personEmail = Plus.AccountApi.getAccountName(mGoogleApiClient);
 
-            myUser = new LocoUser();
+            LocoUser myUser = new LocoUser();
 
             myUser.setName(personName);
             if (personEmail.compareTo("nir.jackson89@gmail.com")==0){
@@ -208,14 +197,15 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
             myUser.setMail(personEmail);
             myUser.setIcon(personPhoto);
+            AppController.SetMyUser(myUser);
             // Log.i(TAG, myUser.toString());
 
             ApiHandler.GetRegistrationId(new IApiCallback<String>() {
                 @Override
                 public void Invoke(String result) {
-                    myUser.setRegId(result);
-                    Log.i(TAG, myUser.toString());
-                    ApiHandler.Login(myUser.toUser(), new IApiCallback<Boolean>() {
+                    AppController.GetMyUser().setRegId(result);
+                    Log.i(TAG, AppController.GetMyUser().toString());
+                    ApiHandler.Login(AppController.GetMyUser().toUser(), new IApiCallback<Boolean>() {
                         @Override
                         public void Invoke(Boolean result) {
                             if(result) {
@@ -278,14 +268,14 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                                 myLoc.setLatitude((float) mLastLocation.getLatitude());
                                 myLoc.setLongitude((float) mLastLocation.getLongitude());
 
-                                myUser.setLocation(myLoc);
+                                AppController.GetMyUser().setLocation(myLoc);
                                 ApiHandler.SetMyLocation(myLoc);
 
                                 if (myMarker == null) {
                                     if(mMap != null) {
 
                                         myMarker = mMap.addMarker(new MarkerOptions()
-                                                .title(myUser.getName())
+                                                .title(AppController.GetMyUser().getName())
                                                 .position(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()))
                                                 .icon(personMarkerIcon));
 
@@ -301,7 +291,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
 
                             if(positionRetrieved) {
-                                ApiHandler.GetAllUsers(myUser.getMail(), new IApiCallback<List<UserAroundMe>>() {
+                                ApiHandler.GetAllUsers(AppController.GetMyUser().getMail(), new IApiCallback<List<UserAroundMe>>() {
                                     @Override
                                     public void Invoke(List<UserAroundMe> result) {
                                         if (result != null) {
@@ -320,7 +310,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
                                                     for (UserAroundMe u : fResult) {
 
-                                                        if (u.getMail().compareTo(myUser.getMail()) != 0) {
+                                                        if (u.getMail().compareTo(AppController.GetMyUser().getMail()) != 0) {
 
                                                             LocoUser nUser = new LocoUser(u);
                                                             AppController.AddUserToCache(nUser.toUser());
@@ -374,6 +364,18 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
         });
 
         workerThread.start();
+
+    }
+
+    @Override
+    public LocoUser GetUser(Marker marker) {
+        return currentUserMarkers.get(marker);
+    }
+
+    public void RefreshFriends() {
+
+        DataAccessObject dao = new DataAccessObject(this);
+        dao.GetAllFriends();
 
     }
 

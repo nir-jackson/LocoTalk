@@ -28,8 +28,7 @@ public class LocoTalkMessageReceiver extends BroadcastReceiver {
                 ApiHandler.RetrieveMessage(Long.parseLong(messageId), new IApiCallback<Message>() {
                     @Override
                     public void Invoke(Message result) {
-                        //dao.WriteMessageFromUser(result);
-                        Log.i(getClass().toString(),result.toString());
+                        dao.WriteMessageToUserConversation(result, false);
                     }
                 });
             } catch (NumberFormatException e) {

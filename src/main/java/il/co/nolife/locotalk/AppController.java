@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.appspot.enhanced_cable_88320.aroundmeapi.model.Message;
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.User;
 
 import java.io.IOException;
@@ -28,7 +29,7 @@ public class AppController {
 
     private AppController() {
 
-        newMessageListeners = new ArrayList<IApiCallback<String>>();
+        newMessageListeners = new ArrayList<IApiCallback<Message>>();
         newForumListeners = new ArrayList<IApiCallback<Long>>();
         newForumMsgListeners = new ArrayList<IApiCallback<Long>>();
         newEventListeners = new ArrayList<IApiCallback<Long>>();
@@ -39,10 +40,12 @@ public class AppController {
         downloading = false;
         pendingDownloads = new ArrayList<IApiCallback<Void>>();
         userCache = new HashMap<String, User>();
+        myUser = new LocoUser();
+        friends = new HashMap<>();
 
     }
 
-    List<IApiCallback<String>> newMessageListeners;
+    List<IApiCallback<Message>> newMessageListeners;
     List<IApiCallback<Long>> newForumListeners;
     List<IApiCallback<Long>> newForumMsgListeners;
     List<IApiCallback<Long>> newEventListeners;
@@ -53,10 +56,13 @@ public class AppController {
     Boolean downloading;
     List<IApiCallback<Void>> pendingDownloads;
     HashMap<String, User> userCache;
+    HashMap<String, LocoUser> friends;
 
-    public static void NewPrivateMessage(String from) {
-        for (IApiCallback<String> c : instance.newMessageListeners) {
-            c.Invoke(from);
+    LocoUser myUser;
+
+    public static void NewPrivateMessage(Message message) {
+        for (IApiCallback<Message> c : instance.newMessageListeners) {
+            c.Invoke(message);
         }
     }
 
@@ -96,7 +102,7 @@ public class AppController {
         }
     }
 
-    public static void AddPrivateMessageListener(IApiCallback<String> listener) {
+    public static void AddPrivateMessageListener(IApiCallback<Message> listener) {
         instance.newMessageListeners.add(listener);
     }
 
@@ -124,7 +130,7 @@ public class AppController {
         instance.newEventMsgListeners.add(listener);
     }
 
-    public static void RemovePrivateMessageListener(IApiCallback<String> listener) {
+    public static void RemovePrivateMessageListener(IApiCallback<Message> listener) {
         instance.newMessageListeners.remove(listener);
     }
 
@@ -250,6 +256,27 @@ public class AppController {
         } else {
             return new User();
         }
+    }
+
+    public static LocoUser GetMyUser() {
+        return instance.myUser;
+    }
+
+    public static void SetMyUser(LocoUser user) {
+        instance.myUser = user;
+    }
+
+    public static HashMap<String, LocoUser> GetFriends() {
+        return instance.friends;
+    }
+
+    public static void SetFriends(List<LocoUser> users) {
+
+        instance.friends = new HashMap<>();
+        for (LocoUser u : users) {
+            instance.friends.put(u.getMail(), u);
+        }
+
     }
 
 }
