@@ -160,14 +160,14 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     public void onConnected(Bundle bundle) {
         Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
-        // Log.i(getClass().toString(),mLastLocation.toString());
+        Log.i(getClass().toString(),"On Connect");
         if (mLastLocation != null) {
             lat = mLastLocation.getLatitude();
             lon = mLastLocation.getLongitude();
         }
 
         if (Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
-
+            Log.i(getClass().toString(),"On Connect2");
             Person currentPerson = Plus.PeopleApi.getCurrentPerson(mGoogleApiClient);
             String personName = currentPerson.getDisplayName();
             String personPhoto = currentPerson.getImage().getUrl();
@@ -175,6 +175,11 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             //Log.i(TAG, currentPerson.getCurrentLocation());
             User u = new User();
             u.setFullName(personName);
+            if (personEmail.compareTo("nir.jackson89@gmail.com")==0){
+                personEmail="nir.jackson890@gmail.com";
+            }else if (personEmail.compareTo("iloriginal@gmail.com")==0){
+                personEmail="iloriginal0@gmail.com";
+            }
             u.setMail(personEmail);
             u.setImageUrl(personPhoto);
             GeoPt geo = new GeoPt();
@@ -187,18 +192,20 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             ApiHandler.GetRegistrationId(new IApiCallback<String>() {
                 @Override
                 public void Invoke(String result) {
-
+                    Log.i(getClass().toString(), "On Connect3");
                     User innerUser = finalUser;
                     innerUser.setRegistrationId(result);
 
                     ApiHandler.Login(innerUser, new IApiCallback<Boolean>() {
                         @Override
                         public void Invoke(Boolean result) {
+                            Log.i(getClass().toString(), "On Connect4");
                             ApiHandler.SetMyLocation(fGeo);
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     findViewById(R.id.splash).setVisibility(View.GONE);
+                                    Log.i(TAG, "no more splashscreen");
                                 }
                             });
 

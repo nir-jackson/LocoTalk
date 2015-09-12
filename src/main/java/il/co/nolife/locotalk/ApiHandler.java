@@ -148,13 +148,13 @@ public class ApiHandler {
 
         if(instance.initialized) {
 
-            String pass = instance.prefs.GetPassword();
+            String pass = "abcde";//instance.prefs.GetPassword();
             User u2 = user;
             u2.setPassword(pass);
             Log.i("user password", pass);
-            if(pass.isEmpty()) {
-                instance.Register(user, callback);
-            }
+//            if(pass.isEmpty()) {
+//                instance.Register(user, callback);
+//            }
             instance.LoginAsync(u2, new IApiCallback<User>() {
                 @Override
                 public void Invoke(User result) {
@@ -187,8 +187,8 @@ public class ApiHandler {
 
     void Register(User user, final IApiCallback<Boolean> callback) {
 
-        SecureRandom random = new SecureRandom();
-        final String pass = new BigInteger(130, random).toString(32);
+        //SecureRandom random = new SecureRandom();
+        final String pass = "abcde";
         user.setPassword(pass);
         instance.RegisterUserAsync(user, new IApiCallback<User>() {
             @Override
