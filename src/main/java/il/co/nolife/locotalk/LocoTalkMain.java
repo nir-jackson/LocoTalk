@@ -235,6 +235,12 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                         MarkerClicked(marker);
                     }
                 });
+                mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+                    @Override
+                    public void onMapLongClick(LatLng latLng) {
+                        LongMapClicked(latLng);
+                    }
+                });
 
                 onMapReady();
 
@@ -242,6 +248,13 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
         }
 
+    }
+
+    void LongMapClicked (LatLng latLng){
+        Intent chooseIntent = new Intent(this, EventOrForumActivity.class);
+        chooseIntent.putExtra("longitude",latLng.longitude);
+        chooseIntent.putExtra("latitude",latLng.latitude);
+        startActivity(chooseIntent);
     }
 
     void MarkerClicked(Marker marker){

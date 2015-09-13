@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <Button
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:text="New Forum"
+        android:id="@+id/new_forum_button"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true"
+        android:background="#999999"
+        android:textSize="40dp"
+        android:textColor="#ffffff" />
+
+    <Button
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:text="New Event"
+        android:id="@+id/new_event_button"
+        android:layout_alignTop="@+id/new_forum_button"
+        android:layout_alignParentEnd="true"
+        android:background="#9c39f1"
+        android:textSize="40dp"
+        android:textColor="#ffffff" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageView"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/ic_launcher" />
+</RelativeLayout>

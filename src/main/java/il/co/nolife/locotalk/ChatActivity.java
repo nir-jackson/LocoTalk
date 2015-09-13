@@ -29,7 +29,8 @@ public class ChatActivity extends Activity {
     ListView list;
     TextView title;
     EditText content;
-    Button sendButton;
+    Button sendButton, addFriend;
+    ImageView profile;
     List<Message> contentList;
 
     Intent intent;
@@ -148,6 +149,9 @@ public class ChatActivity extends Activity {
         List<Message> messages = dao.GetAllMessagesFromEvent(eventId);
         adapter = new ChatListAdapter(getApplicationContext(), messages, this);
         list.setAdapter(adapter);
+        Log.i(getClass().toString(), "Event Chat");
+        profile = (ImageView)findViewById(R.id.profile_image);
+        profile.setVisibility(View.GONE);
 
     }
 
@@ -158,7 +162,7 @@ public class ChatActivity extends Activity {
         List<Message> messages = dao.GetAllMessagesFromEvent(forumId);
         adapter = new ChatListAdapter(getApplicationContext(), messages, this);
         list.setAdapter(adapter);
-
+        Log.i(getClass().toString(), "Forum Chat");
     }
 
     protected void onStop() {
