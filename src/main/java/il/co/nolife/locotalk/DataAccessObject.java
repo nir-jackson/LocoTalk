@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.GeoPt;
@@ -12,6 +13,7 @@ import com.appspot.enhanced_cable_88320.aroundmeapi.model.Message;
 import com.google.api.client.util.DateTime;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -578,10 +580,32 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         db.rawQuery("UPDATE " + FRIENDS_TABLE + " SET " + U_SAFE + "=1 WHERE " + U_MAIL + "='" + mail + "'", null);
 
-        AppController.FriendPonged(mail);
-
     }
 
+    public void UpdateFriendsLocation(final Collection<LocoUser> friends) {
+
+        final SQLiteDatabase db = this.getWritableDatabase();
+
+        new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... params) {
+
+                for (LocoUser u : friends) {
+
+                    ContentValues values = new ContentValues();
+                    values.put(LOC_LAT, u.getLocation().getLatitude());
+                    values.put(LOC_LON, u.getLocation().getLongitude());
+
+                    db.update(FRIENDS_TABLE, values, U_MAIL + "='" + u.getMail() + "'", null);
+
+                }
+
+                return null;
+            }
+        }.execute();
+
+    }
 
     public List<Message> GetAllMessagesFromForum(long forumId) {
 
@@ -644,6 +668,36 @@ public class DataAccessObject extends SQLiteOpenHelper {
                 retVal.add(u);
 
             } while(cursor.moveToNext());
+
+        }
+
+        cursor.close();
+
+        return retVal;
+
+    }
+
+    public LocoUser GetFriend(String mail) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM " + FRIENDS_TABLE, null);
+
+        LocoUser retVal = null;
+
+        if(cursor.moveToFirst()) {
+
+            retVal = new LocoUser();
+            GeoPt loc = new GeoPt();
+            loc.setLatitude(cursor.getFloat(cursor.getColumnIndex(LOC_LAT)));
+            loc.setLongitude(cursor.getFloat(cursor.getColumnIndex(LOC_LON)));
+            retVal.setLocation(loc);
+            retVal.setMail(cursor.getString(cursor.getColumnIndex(U_MAIL)));
+            retVal.setName(cursor.getString(cursor.getColumnIndex(NAME)));
+            int safe = cursor.getInt(cursor.getColumnIndex(U_SAFE));
+            if(safe != 0) {
+                retVal.setSafe(true);
+            }
 
         }
 

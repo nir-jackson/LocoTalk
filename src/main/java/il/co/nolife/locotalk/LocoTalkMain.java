@@ -27,12 +27,15 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.plus.Plus;
 import com.google.android.gms.plus.model.people.Person;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// import com.google.android.gms.location.LocationListener;
 
-public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, IMarkerLocoUserGetter {
+
+public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, IMarkerLocoUserGetter, SimpleDialog.DialogClickListener {
 
     private static final String TAG = "LocoTalkMain";
     private static final int RC_SIGN_IN = 0;
@@ -42,14 +45,32 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     private GoogleApiClient mGoogleApiClient;
 
     HashMap<Marker, LocoUser> currentUserMarkers;
+    HashMap<String, Marker> reverseMarkersMap;
+    HashMap<Marker, LocoForum> forumMarkerMap;
+    HashMap<Marker, LocoEvent> eventMarkerMap;
     Marker myMarker;
-    // LocoUser myUser;
 
     BitmapDescriptor personMarkerIcon;
+    BitmapDescriptor safePersonMarkerIcon;
+    BitmapDescriptor friendMarkerIcon;
+    BitmapDescriptor safeFriendMarkerIcon;
+    BitmapDescriptor myMarkerIcon;
+    BitmapDescriptor forumMarkerIcon;
+    BitmapDescriptor eventMarkerIcon;
 
     Thread workerThread;
     Boolean pause = false;
     Boolean positionRetrieved = false;
+    Boolean waitingForLocationServices = false;
+
+    DataAccessObject dao;
+
+    IApiCallback<String> newFriendListener;
+    IApiCallback<String> userPongedListener;
+    IApiCallback<Long> newForumListener;
+    IApiCallback<Long> newEventListener;
+
+    List<IApiCallback<Void>> waitingForMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,21 +82,71 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
         EndpointApiCreator.initialize(null);
         setContentView(R.layout.map_activity);
         ApiHandler.Initialize(this);
+        dao = new DataAccessObject(this);
 
         personMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person));
+        safePersonMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person));
+        friendMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person));
+        safeFriendMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person));
+        myMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person));
+        forumMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person));
+        eventMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person));
 
-        buildGoogleApiClient2();
-        //buildGoogleApiClient();
+        waitingForMap = new ArrayList<>();
+
+        newFriendListener = new IApiCallback<String>() {
+            @Override
+            public void Invoke(String result) {
+
+                AppController.SetFriends(dao.GetAllFriends());
+                Marker m = reverseMarkersMap.get(result);
+                if(m != null){
+                    m.setIcon(friendMarkerIcon);
+                }
+
+            }
+        };
+
+        userPongedListener = new IApiCallback<String>() {
+            @Override
+            public void Invoke(String result) {
+
+                Marker m = reverseMarkersMap.get(result);
+                if (m != null) {
+                    if(AppController.CheckIfFriend(result)) {
+                        m.setIcon(safeFriendMarkerIcon);
+                    } else {
+                        m.setIcon(safePersonMarkerIcon);
+                    }
+                }
+
+            }
+        };
+
+
+
+        buildGoogleApiClient();
 
     }
 
     protected void onStart() {
         super.onStart();
+
+        AppController.SetFriends(dao.GetAllFriends());
+        AppController.AddNewFriendListener(newFriendListener);
+        AppController.AddUserPongedListener(userPongedListener);
         mGoogleApiClient.connect();
+        LocationServiceEnabled();
+
     }
 
     protected void onStop() {
         super.onStop();
+
+        AppController.RemoveNewFriendListener(newFriendListener);
+        AppController.RemoveUserPongedListener(userPongedListener);
+        AppController.RemoveNewForumListener(newForumListener);
+        AppController.RemoveNewEventListener(newEventListener);
 
         pause = true;
 
@@ -96,7 +167,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
     }
 
-    protected synchronized void buildGoogleApiClient2(){
+    protected synchronized void buildGoogleApiClient(){
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -149,6 +220,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                     .getMap();
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
+
                 //mMap.setInfoWindowAdapter(new LocoInfoWindowAdapter(this, this));
                 mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                     @Override
@@ -163,6 +235,9 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                         MarkerClicked(marker);
                     }
                 });
+
+                onMapReady();
+
             }
 
         }
@@ -170,6 +245,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     }
 
     void MarkerClicked(Marker marker){
+
         LocoUser user = currentUserMarkers.get(marker);
         if(user != null){
             Intent chatIntent = new Intent(this, ChatActivity.class);
@@ -180,12 +256,6 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             Log.i(TAG,"user is null");
         }
 
-        // Log.i(TAG, "pressed Marker, suppose to open new activity");
-        // Intent intent = new Intent(this,ChatActivity.class);
-        // startActivity(intent);
-
-
-        //Log.i(getClass().toString(), marker.getTitle());
     }
 
     @Override
@@ -240,13 +310,20 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             });
 
             Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-            if(mLastLocation != null) {
-                pause = false; // onStop runs fot some stupid reason, so on the first time i have to counteract the pause = true
-                LocationServiceEnabled();
-            } else {
+            if(mLastLocation == null) {
 
-                Intent intent = new Intent(Settings.ACTION_SECURITY_SETTINGS);
-                startActivity(intent);
+                if(!waitingForLocationServices) {
+
+                    Bundle dialogBundle = new Bundle();
+                    dialogBundle.putString("title", "Location");
+                    dialogBundle.putString("positive", "Go");
+                    dialogBundle.putString("negative", "Later");
+                    dialogBundle.putString("content", "Your location services are turned off, this application cannot operate without access to your current location.\nPlease turn on location services");
+                    SimpleDialog d = new SimpleDialog();
+                    d.setArguments(dialogBundle);
+                    d.show(getSupportFragmentManager(), "SimpleDialog");
+
+                }
 
             }
 
@@ -261,6 +338,79 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
     }
 
+    public void onMapReady() {
+
+        for (IApiCallback<Void> c : waitingForMap) {
+            c.Invoke(null);
+        }
+
+        newForumListener = new IApiCallback<Long>() {
+            @Override
+            public void Invoke(final Long result) {
+                RefreshForumMarkers();
+            }
+        };
+
+        newEventListener = new IApiCallback<Long>() {
+            @Override
+            public void Invoke(Long result) {
+                RefreshEventMarkers();
+            }
+        };
+
+        AppController.AddNewForumListener(newForumListener);
+        AppController.AddNewEventListener(newEventListener);
+
+    }
+
+    public void RefreshForumMarkers() {
+
+        if(forumMarkerMap != null) {
+            for (Marker marker : forumMarkerMap.keySet()) {
+                marker.remove();
+            }
+        }
+
+        forumMarkerMap = new HashMap<>();
+        List<LocoForum> forums = dao.GetAllForums();
+
+        for (LocoForum forum : forums) {
+
+            Marker marker = mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(forum.getLocation().getLatitude(), forum.getLocation().getLongitude()))
+                    .icon(forumMarkerIcon)
+                    .title(forum.getName()));
+
+            forumMarkerMap.put(marker, forum);
+
+        }
+
+    }
+
+    public void RefreshEventMarkers() {
+
+        if(eventMarkerMap != null) {
+            for (Marker marker : eventMarkerMap.keySet()) {
+                marker.remove();
+            }
+        }
+
+        eventMarkerMap = new HashMap<>();
+        List<LocoEvent> events = dao.GetAllEvents();
+
+        for (LocoEvent event : events) {
+
+            Marker marker = mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(event.getLocation().getLatitude(), event.getLocation().getLongitude()))
+                    .icon(eventMarkerIcon)
+                    .title(event.getName()));
+
+            eventMarkerMap.put(marker, event);
+
+        }
+
+    }
+
     public void LocationServiceEnabled() {
 
         pause = false;
@@ -270,29 +420,30 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             public void run() {
                 Log.i(TAG, pause.toString());
                 while(!pause) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
 
-                            Log.i(TAG,"stam bdika");
-                            final GeoPt myLoc = new GeoPt();
+                    Log.i(TAG, "Worker thread tick");
+                    final Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
-                            Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-                            if(mLastLocation != null) {
+                    if(mLastLocation != null) {
 
-                                myLoc.setLatitude((float) mLastLocation.getLatitude());
-                                myLoc.setLongitude((float) mLastLocation.getLongitude());
+                        final GeoPt myLoc = new GeoPt();
+                        myLoc.setLatitude((float) mLastLocation.getLatitude());
+                        myLoc.setLongitude((float) mLastLocation.getLongitude());
 
-                                AppController.GetMyUser().setLocation(myLoc);
-                                ApiHandler.SetMyLocation(myLoc);
+                        AppController.GetMyUser().setLocation(myLoc);
+                        ApiHandler.SetMyLocation(myLoc);
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
 
                                 if (myMarker == null) {
-                                    if(mMap != null) {
+                                    if (mMap != null) {
 
                                         myMarker = mMap.addMarker(new MarkerOptions()
                                                 .title(AppController.GetMyUser().getName())
                                                 .position(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()))
-                                                .icon(personMarkerIcon));
+                                                .icon(myMarkerIcon));
 
                                         positionRetrieved = true;
 
@@ -301,11 +452,6 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                                     myMarker.setPosition(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()));
                                 }
 
-                            }
-
-
-
-                            if(positionRetrieved) {
                                 ApiHandler.GetAllUsers(AppController.GetMyUser().getMail(), new IApiCallback<List<UserAroundMe>>() {
                                     @Override
                                     public void Invoke(List<UserAroundMe> result) {
@@ -329,25 +475,32 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
                                                             LocoUser nUser = new LocoUser(u);
                                                             AppController.AddUserToCache(nUser.toUser());
-                                                            // Date seenDate = new Date(u.getLastSeen().getValue());
-                                                            // Date now = new Date();
-                                                            // Date checkDate = new Date(now.getTime() - 300000); // Current minus 5 minutes
-                                                            // if (seenDate.after(checkDate)) {
 
                                                             Log.i(TAG, nUser.toString());
-                                                            if(nUser.getLocation() != null) {
-                                                                Marker newMarker = mMap.addMarker(new MarkerOptions()
-                                                                        .position(new LatLng(nUser.getLocation().getLatitude(), nUser.getLocation().getLongitude()))
-                                                                        .title(nUser.getName())
-                                                                        .icon(personMarkerIcon));
-                                                                currentUserMarkers.put(newMarker, nUser);
-                                                            }
+                                                            if (nUser.getLocation() != null) {
 
-                                                            // }
+                                                                MarkerOptions options = new MarkerOptions()
+                                                                        .position(new LatLng(nUser.getLocation().getLatitude(), nUser.getLocation().getLongitude()))
+                                                                        .title(nUser.getName());
+
+                                                                if(AppController.CheckIfSafeFriend(nUser.getMail())) {
+                                                                    options.icon(safeFriendMarkerIcon);
+                                                                } else if(AppController.CheckIfFriend(nUser.getMail())) {
+                                                                    options.icon(friendMarkerIcon);
+                                                                } else {
+                                                                    options.icon(personMarkerIcon);
+                                                                }
+
+                                                                Marker newMarker = mMap.addMarker(options);
+                                                                currentUserMarkers.put(newMarker, nUser);
+
+                                                            }
 
                                                         }
 
                                                     }
+
+                                                    AppController.UpdateFriendsLocation(currentUserMarkers.values(), dao);
 
                                                 }
 
@@ -359,18 +512,32 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
                                 });
 
+
+
                             }
 
+                        });
+
+                        try {
+                            Thread.sleep(30000, 0);
+                        } catch (InterruptedException e) {
+                            if(workerThread != null) {
+                                Log.e("TickerThread", e.getMessage());
+                                e.printStackTrace();
+                            }
                         }
 
-                    });
-                    try {
-                        Thread.sleep(30000, 0);
-                    } catch (InterruptedException e) {
-                        if(workerThread != null) {
-                             Log.e("TickerThread", e.getMessage());
-                             e.printStackTrace();
+                    } else {
+
+                        try {
+                            Thread.sleep(1000, 0);
+                        } catch (InterruptedException e) {
+                            if(workerThread != null) {
+                                Log.e("TickerThread", e.getMessage());
+                                e.printStackTrace();
+                            }
                         }
+
                     }
 
                 }
@@ -392,6 +559,20 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
         DataAccessObject dao = new DataAccessObject(this);
         dao.GetAllFriends();
 
+    }
+
+    @Override
+    public void onPositive() {
+
+        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        startActivity(intent);
+        waitingForLocationServices = true;
+
+    }
+
+    @Override
+    public void onNegative() {
+        waitingForLocationServices = true;
     }
 
 }

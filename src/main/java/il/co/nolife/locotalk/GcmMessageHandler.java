@@ -43,6 +43,7 @@ public class GcmMessageHandler {
                     String mail = message.getString("mail");
                     DataAccessObject dao = new DataAccessObject(context);
                     dao.ValidateFriend(mail);
+                    AppController.UserPonged(mail);
 
                 } else if (dataType.compareTo("newForum") == 0) {
 

@@ -11,6 +11,7 @@ import com.appspot.enhanced_cable_88320.aroundmeapi.model.User;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class AppController {
         newEventListeners = new ArrayList<IApiCallback<Long>>();
         newEventMsgListeners = new ArrayList<IApiCallback<Long>>();
         newFriendListeners = new ArrayList<IApiCallback<String>>();
-        friendPongedListener = new ArrayList<IApiCallback<String>>();
+        userPongedListener = new ArrayList<IApiCallback<String>>();
         cachedImages = new HashMap<String, Bitmap>();
         downloading = false;
         pendingDownloads = new ArrayList<IApiCallback<Void>>();
@@ -51,7 +52,7 @@ public class AppController {
     List<IApiCallback<Long>> newEventListeners;
     List<IApiCallback<Long>> newEventMsgListeners;
     List<IApiCallback<String>> newFriendListeners;
-    List<IApiCallback<String>> friendPongedListener;
+    List<IApiCallback<String>> userPongedListener;
     HashMap<String, Bitmap> cachedImages;
     Boolean downloading;
     List<IApiCallback<Void>> pendingDownloads;
@@ -96,8 +97,8 @@ public class AppController {
         }
     }
 
-    public static void FriendPonged(String user) {
-        for(IApiCallback<String> c : instance.friendPongedListener) {
+    public static void UserPonged(String user) {
+        for(IApiCallback<String> c : instance.userPongedListener) {
             c.Invoke(user);
         }
     }
@@ -118,8 +119,8 @@ public class AppController {
         instance.newFriendListeners.add(listener);
     }
 
-    public static void AddFriendPongedListener(IApiCallback<String> listener) {
-        instance.friendPongedListener.add(listener);
+    public static void AddUserPongedListener(IApiCallback<String> listener) {
+        instance.userPongedListener.add(listener);
     }
 
     public static void AddNewEventListener(IApiCallback<Long> listener) {
@@ -154,8 +155,8 @@ public class AppController {
         instance.newFriendListeners.remove(listener);
     }
 
-    public static void RemoveFriendPongedListener(IApiCallback<String> listener) {
-        instance.friendPongedListener.remove(listener);
+    public static void RemoveUserPongedListener(IApiCallback<String> listener) {
+        instance.userPongedListener.remove(listener);
     }
 
     public static void GetImage(final String url, final IApiCallback<Bitmap> callback) {
@@ -227,18 +228,7 @@ public class AppController {
 
     }
 
-    public static void AddUserToCache(User[] users) {
-
-        for (User u : users) {
-            if(!instance.userCache.containsKey(u.getMail())) {
-                instance.userCache.put(u.getMail(), u);
-                GetImage(u.getImageUrl(), null);
-            }
-        }
-
-    }
-
-    public static void AddUserToCache(List<User> users) {
+    public static void AddUsersToCache(Collection<User> users) {
 
         for (User u : users) {
             if(!instance.userCache.containsKey(u.getMail())) {
@@ -270,11 +260,58 @@ public class AppController {
         return instance.friends;
     }
 
-    public static void SetFriends(List<LocoUser> users) {
+    public static List<LocoUser> GetSafeFriends() {
+
+        List<LocoUser> safeFriends = new ArrayList<>();
+
+        for (LocoUser friend : instance.friends.values()) {
+            if(friend.getSafe()) {
+                safeFriends.add(friend);
+            }
+        }
+
+        return safeFriends;
+
+    }
+
+    public static Boolean CheckIfFriend(String mail) {
+        return instance.friends.containsKey(mail);
+    }
+
+    public static Boolean CheckIfSafeFriend(String mail) {
+
+        LocoUser friend = instance.friends.get(mail);
+        if(friend != null) {
+            return friend.getSafe();
+        } else {
+            return false;
+        }
+    }
+
+    public static void SetFriends(Collection<LocoUser> friends) {
 
         instance.friends = new HashMap<>();
+        for (LocoUser f : friends) {
+            instance.friends.put(f.getMail(), f);
+        }
+
+    }
+
+    public static void UpdateFriendsLocation(Collection<LocoUser> users, DataAccessObject dao) {
+
+        Boolean updated = false;
         for (LocoUser u : users) {
-            instance.friends.put(u.getMail(), u);
+
+            LocoUser friend = instance.friends.get(u.getMail());
+            if(friend != null) {
+                friend.setLocation(u.getLocation());
+                updated = true;
+            }
+
+        }
+
+        if(updated) {
+            dao.UpdateFriendsLocation(instance.friends.values());
         }
 
     }
