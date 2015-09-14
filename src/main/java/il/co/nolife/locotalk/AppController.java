@@ -24,7 +24,21 @@ public class AppController {
     public static final String TAG = "AppController";
 
     static {
+
         instance = new AppController();
+
+        AddUserPongedListener(new IApiCallback<String>() {
+            @Override
+            public void Invoke(String result) {
+
+                LocoUser user = instance.friends.get(result);
+                if(user != null) {
+                    user.setSafe(true);
+                }
+
+            }
+        });
+
     }
 
     static AppController instance;
@@ -44,18 +58,6 @@ public class AppController {
         userCache = new HashMap<String, LocoUser>();
         myUser = new LocoUser();
         friends = new HashMap<>();
-
-        AddUserPongedListener(new IApiCallback<String>() {
-            @Override
-            public void Invoke(String result) {
-
-                LocoUser user = friends.get(result);
-                if(user != null) {
-                    user.setSafe(true);
-                }
-
-            }
-        });
 
     }
 
