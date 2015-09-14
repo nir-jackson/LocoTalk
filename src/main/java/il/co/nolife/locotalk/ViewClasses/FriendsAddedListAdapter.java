@@ -5,6 +5,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,6 +43,15 @@ public class FriendsAddedListAdapter extends ArrayAdapter<String> {
         public void afterTextChanged(Editable s) {
 
             String str = s.toString();
+
+            // Log.i("TEXTCHECK", str);
+            StringBuilder c2 = new StringBuilder();
+            for (String f : friends) {
+                c2.append(f);
+                c2.append(",");
+            }
+
+            Log.i("TEXTCHECK2", c2.toString());
 
             if(friends.contains(str)) {
 

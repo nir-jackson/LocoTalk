@@ -2,10 +2,8 @@ package il.co.nolife.locotalk.ViewClasses;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -67,8 +65,8 @@ public class ChatListAdapter extends ArrayAdapter<Message> {
     Context context;
     List<Message> messages;
     Activity myActivity;
-    ColorStateList myColor;
-    ColorStateList whiteColor;
+    int myColor;
+    int whiteColor;
     Boolean showImages;
 
     public ChatListAdapter(Context context, List<Message> objects, Activity activity, Boolean showImages) {
@@ -78,8 +76,8 @@ public class ChatListAdapter extends ArrayAdapter<Message> {
         messages = objects;
         myActivity = activity;
         this.showImages = showImages;
-        myColor = ColorStateList.valueOf(Color.parseColor("#eeeeff"));
-        whiteColor = ColorStateList.valueOf(Color.WHITE);
+        myColor = Color.parseColor("##a4f9ff");
+        whiteColor = Color.WHITE;
 
     }
 
@@ -104,19 +102,12 @@ public class ChatListAdapter extends ArrayAdapter<Message> {
         holder.content.setText(messages.get(position).getContnet());
         holder.image.setImageDrawable(context.getResources().getDrawable(R.drawable.question_man));
         holder.pos = position;
-        Log.i("TEXTCHECK", "|" + AppController.GetMyUser().getMail() + "|" + messages.get(position).getFrom() + "|");
         if(AppController.GetMyUser().getMail().compareTo(messages.get(position).getFrom()) == 0) {
-
-            holder.content.setBackgroundTintList(myColor);
+            holder.content.setBackgroundColor(myColor);
             holder.content.setGravity(Gravity.END);
-            Log.i("TEXTCHECK", "its me");
-
         } else {
-
-            holder.content.setBackgroundTintList(whiteColor);
+            holder.content.setBackgroundColor(whiteColor);
             holder.content.setGravity(Gravity.START);
-            Log.i("TEXTCHECK", "its not me");
-
         }
 
         if(showImages) {

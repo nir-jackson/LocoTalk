@@ -274,6 +274,23 @@ public class ApiHandler {
 
     }
 
+    public static void Ping(final String mail) {
+
+        if(instance.initialized) {
+            instance.SendGCMMessageAsync(mail, "{ 'type': 'ping', 'mail': '" + AppController.GetMyUser().getMail() + "' }");
+        } else {
+
+            instance.delayedCalls.add(new IApiCallback<Void>() {
+                @Override
+                public void Invoke(Void result) {
+                    Ping(mail);
+                }
+            });
+
+        }
+
+    }
+
     public static void GetUsersAroundMe(final LocoUser user, final int radius, final IApiCallback<List<UserAroundMe>> onEnd) {
 
         if(instance.initialized) {

@@ -45,6 +45,18 @@ public class AppController {
         myUser = new LocoUser();
         friends = new HashMap<>();
 
+        AddUserPongedListener(new IApiCallback<String>() {
+            @Override
+            public void Invoke(String result) {
+
+                LocoUser user = friends.get(result);
+                if(user != null) {
+                    user.setSafe(true);
+                }
+
+            }
+        });
+
     }
 
     List<IApiCallback<Message>> newMessageListeners;
@@ -226,6 +238,7 @@ public class AppController {
 
             instance.userCache.put(user.getMail(), user);
             GetImage(user.getIcon(), null);
+            ApiHandler.Ping(user.getMail());
 
         }
 
@@ -237,6 +250,7 @@ public class AppController {
             if(!instance.userCache.containsKey(u.getMail())) {
                 instance.userCache.put(u.getMail(), u);
                 GetImage(u.getIcon(), null);
+                ApiHandler.Ping(u.getMail());
             }
         }
 

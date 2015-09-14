@@ -23,6 +23,8 @@
         android:layout_alignParentEnd="true"
         android:layout_marginStart="69dp"
         android:textColor="#001"
-        android:backgroundTintMode="add"/>
+        android:background="#a4f9ff"
+
+        android:layout_marginEnd="25dp"/>
 
 </RelativeLayout>
