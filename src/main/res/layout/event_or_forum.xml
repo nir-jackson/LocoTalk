@@ -29,7 +29,8 @@
             android:layout_height="60dp"
             android:text="Create"
             android:textSize="20sp"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:backgroundTint="#33ff7a" />
 
         <Button
             android:layout_width="1dp"
