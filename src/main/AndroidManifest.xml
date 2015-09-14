@@ -54,8 +54,10 @@
 
         </activity>
 
-        <activity android:name=".EventOrForumActivity"
-            android:label="@string/app_name">
+        <activity
+            android:name=".EventOrForumActivity"
+            android:label="@string/app_name"
+            android:windowSoftInputMode="stateVisible|adjustResize">
 
         </activity>
 
@@ -79,10 +81,6 @@
                 <category android:name="il.co.nolife.locotalk" />
             </intent-filter>
         </receiver>
-
-        <service
-            android:name=".LocoBackground"
-            android:exported="false"/>
 
 
     </application>

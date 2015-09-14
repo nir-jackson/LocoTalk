@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/remove_button"
+        android:layout_width="100dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true"
+        android:backgroundTint="#aa4444"
+        android:backgroundTintMode="multiply"
+        android:text="Remove"/>
+
+    <AutoCompleteTextView
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/auto_complete_friend_item"
+        android:layout_toLeftOf="@id/remove_button"
+        />
+
+
+
+</RelativeLayout>

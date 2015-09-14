@@ -22,6 +22,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import il.co.nolife.locotalk.DataTypes.LocoEvent;
+import il.co.nolife.locotalk.DataTypes.LocoForum;
+import il.co.nolife.locotalk.DataTypes.LocoUser;
+
 /**
  * Created by Victor Belski on 9/7/2015.
  * Handles all operation involving the AroundMeApi
@@ -332,7 +336,7 @@ public class ApiHandler {
 
     }
 
-    public static void SendForumMessage(final LocoForum forum, final Message message) {
+    public static void SendForumMessage(final LocoForum forum, final String message) {
 
         if(instance.initialized) {
 
@@ -343,17 +347,21 @@ public class ApiHandler {
             builder.append(", 'owner':'");
             builder.append(forum.getOwner());
             builder.append("', 'message': { 'from':'");
-            builder.append(message.getFrom());
+            builder.append(AppController.GetMyUser().getMail());
             builder.append("', 'time':");
             builder.append(new Date().getTime());
             builder.append(", 'content':'");
-            builder.append(message.getContnet());
+            builder.append(message);
             builder.append("' } }");
 
             String json = builder.toString();
 
+            String myMail = AppController.GetMyUser().getMail();
             for (LocoUser user : forum.getUsers()) {
-                instance.SendGCMMessageAsync(user.getMail(), json);
+                String mail = user.getMail();
+                if(mail.compareTo(myMail) != 0) {
+                    instance.SendGCMMessageAsync(user.getMail(), json);
+                }
             }
 
         } else {
@@ -369,7 +377,7 @@ public class ApiHandler {
 
     }
 
-    public static void SendEventMessage(final LocoEvent event, final Message message, final int radius) {
+    public static void SendEventMessage(final LocoEvent event, final String message) {
 
         if(instance.initialized) {
 
@@ -379,28 +387,34 @@ public class ApiHandler {
             builder.append(event.getId());
             builder.append(", 'owner':'");
             builder.append(event.getOwner());
-            builder.append("', 'lat':");
+            builder.append("', 'radius':");
+            builder.append(event.getRadius());
+            builder.append(", 'lat':");
             builder.append(event.getLocation().getLatitude());
             builder.append(", 'lon':");
             builder.append(event.getLocation().getLongitude());
             builder.append(", 'name':'");
             builder.append(event.getName());
             builder.append("', 'message': { 'from':'");
-            builder.append(message.getFrom());
+            builder.append(AppController.GetMyUser().getMail());
             builder.append("', 'time':");
             builder.append(new Date().getTime());
             builder.append(", 'content':'");
-            builder.append(message.getContnet());
+            builder.append(message);
             builder.append("' } }");
 
             final String json = builder.toString();
 
-            instance.GetUsersAroundPoint(radius, event.getLocation().getLatitude(), event.getLocation().getLongitude(), new IApiCallback<List<UserAroundMe>>() {
+            instance.GetUsersAroundPoint(event.getRadius(), event.getLocation().getLatitude(), event.getLocation().getLongitude(), new IApiCallback<List<UserAroundMe>>() {
                 @Override
                 public void Invoke(List<UserAroundMe> result) {
                     if(result != null) {
+                        String myMail = AppController.GetMyUser().getMail();
                         for (UserAroundMe user : result) {
-                            instance.SendGCMMessageAsync(user.getMail(), json);
+                            String mail = user.getMail();
+                            if(myMail.compareTo(mail) != 0) {
+                                instance.SendGCMMessageAsync(user.getMail(), json);
+                            }
                         }
                     }
                 }
@@ -411,7 +425,7 @@ public class ApiHandler {
             instance.delayedCalls.add(new IApiCallback<Void>() {
                 @Override
                 public void Invoke(Void result) {
-                    SendEventMessage(event, message, radius);
+                    SendEventMessage(event, message);
                 }
             });
 

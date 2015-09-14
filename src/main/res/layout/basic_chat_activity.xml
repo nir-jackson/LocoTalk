@@ -1,66 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:padding="5dp">
 
-    <TextView
-        android:layout_width="fill_parent"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:id="@+id/chat_title"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:textSize="40sp"
-        android:gravity= "center"
-        android:layout_alignBottom="@+id/profile_image"
-        android:layout_toEndOf="@+id/profile_image" />
+        android:orientation="vertical"
+        android:id="@+id/chat_top_panel"
+        android:divider="?android:dividerHorizontal"
+        android:showDividers="middle">
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/message_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:text="Message"
-        android:layout_toStartOf="@+id/sendbutton" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/messagesList"
-        android:layout_alignParentStart="true"
-        android:layout_above="@+id/message_content"
-        android:layout_below="@+id/add_friend" />
+            <ImageView
+                android:layout_width="130dp"
+                android:layout_height="130dp"
+                android:id="@+id/chat_profile_image"
+                android:src="@drawable/question_man"
+                />
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:id="@+id/chat_title"
+                android:textSize="40sp"
+                android:gravity= "center"/>
+
+
+
+        </LinearLayout>
+
+        <TextView
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:paddingTop="5dip"
+            android:gravity="center_horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#000" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/chat_center_button"
+            android:backgroundTintMode="multiply"
+            android:layout_marginTop="7dp"
+            android:layout_marginBottom="7dp"
+            android:height="40dp"
+            />
+
+
+
+        <TextView
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:paddingTop="5dip"
+            android:gravity="center_horizontal"
+            android:layout_below="@+id/connect_help"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#000" />
+
+
+
+
+    </LinearLayout>
+
 
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Send"
-        android:id="@+id/sendbutton"
+        android:id="@+id/chat_send_button"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_below="@+id/messagesList" />
+        android:layout_below="@+id/chat_message_list" />
 
-    <ImageView
+    <EditText
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/chat_message_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:hint="Message"
+        android:layout_toStartOf="@+id/chat_send_button" />
+
+    <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/profile_image"
-        android:src="@drawable/question_man"
-        android:layout_alignParentTop="true"
+        android:id="@+id/chat_message_list"
         android:layout_alignParentStart="true"
-        />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Add To Friends"
-        android:id="@+id/add_friend"
-        android:layout_alignEnd="@+id/chat_title"
-        android:layout_alignParentEnd="false"
-        android:background="#339dff"
-        android:layout_below="@+id/chat_title"
-        android:layout_alignParentStart="true"
-        android:height="40dp"
-        />
+        android:layout_above="@+id/chat_message_content"
+        android:layout_below="@+id/chat_top_panel" />
 
 </RelativeLayout>

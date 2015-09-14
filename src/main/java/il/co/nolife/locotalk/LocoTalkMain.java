@@ -3,6 +3,7 @@ package il.co.nolife.locotalk;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -17,10 +18,14 @@ import com.aroundme.EndpointApiCreator;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -31,6 +36,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import il.co.nolife.locotalk.DataTypes.EChatType;
+import il.co.nolife.locotalk.DataTypes.LocoEvent;
+import il.co.nolife.locotalk.DataTypes.LocoForum;
+import il.co.nolife.locotalk.DataTypes.LocoUser;
+import il.co.nolife.locotalk.ViewClasses.SimpleDialog;
 
 // import com.google.android.gms.location.LocationListener;
 
@@ -49,6 +60,10 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     HashMap<Marker, LocoForum> forumMarkerMap;
     HashMap<Marker, LocoEvent> eventMarkerMap;
     Marker myMarker;
+
+    Marker selectedMarker;
+    Circle eventRadius;
+    CameraPosition cameraPosition;
 
     BitmapDescriptor personMarkerIcon;
     BitmapDescriptor safePersonMarkerIcon;
@@ -84,13 +99,16 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
         ApiHandler.Initialize(this);
         dao = new DataAccessObject(this);
 
+        eventMarkerMap = new HashMap<>();
+        forumMarkerMap = new HashMap<>();
+
         personMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person));
-        safePersonMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person));
-        friendMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person));
-        safeFriendMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person));
-        myMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person));
-        forumMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person));
-        eventMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person));
+        safePersonMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person_blue));
+        friendMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person_yellow));
+        safeFriendMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person_green));
+        myMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person_red));
+        forumMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.forum));
+        eventMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.event));
 
         waitingForMap = new ArrayList<>();
 
@@ -123,8 +141,6 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             }
         };
 
-
-
         buildGoogleApiClient();
 
     }
@@ -145,8 +161,8 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
         AppController.RemoveNewFriendListener(newFriendListener);
         AppController.RemoveUserPongedListener(userPongedListener);
-        AppController.RemoveNewForumListener(newForumListener);
-        AppController.RemoveNewEventListener(newEventListener);
+        AppController.RemoveForumsChangedListener(newForumListener);
+        AppController.RemoveEventsChangedListener(newEventListener);
 
         pause = true;
 
@@ -221,14 +237,6 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
 
-                //mMap.setInfoWindowAdapter(new LocoInfoWindowAdapter(this, this));
-                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                    @Override
-                    public boolean onMarkerClick(Marker marker) {
-                        //MarkerClicked(marker);
-                        return false;
-                    }
-                });
                 mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                     @Override
                     public void onInfoWindowClick(Marker marker) {
@@ -242,6 +250,40 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                     }
                 });
 
+                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        //MarkerClicked(marker);
+                        LocoEvent event = eventMarkerMap.get(marker);
+                        if (event != null) {
+                            selectedMarker = marker;
+
+                            eventRadius = mMap.addCircle(new CircleOptions()
+                                    .center(new LatLng(event.getLocation().getLatitude(), event.getLocation().getLongitude()))
+                                    .radius(20000)
+                                    .strokeWidth(3)
+                                    .strokeColor(Color.parseColor("#aabbdd")));
+
+                            Log.i("ClickCheck", "Selecting " + selectedMarker.getTitle());
+                        }
+                        return false;
+                    }
+                });
+
+                mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+                    @Override
+                    public void onMapClick(LatLng latLng) {
+                        if (selectedMarker != null) {
+                            Log.i("ClickCheck", "Deselecting " + selectedMarker.getTitle());
+                            selectedMarker = null;
+                            if (eventRadius != null) {
+                                eventRadius.remove();
+                                eventRadius = null;
+                            }
+                        }
+                    }
+                });
+
                 onMapReady();
 
             }
@@ -251,9 +293,10 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     }
 
     void LongMapClicked (LatLng latLng){
+        EventOrForumActivity.Reset();
         Intent chooseIntent = new Intent(this, EventOrForumActivity.class);
-        chooseIntent.putExtra("longitude",latLng.longitude);
-        chooseIntent.putExtra("latitude",latLng.latitude);
+        chooseIntent.putExtra("lon",latLng.longitude);
+        chooseIntent.putExtra("lat",latLng.latitude);
         startActivity(chooseIntent);
     }
 
@@ -265,8 +308,32 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             chatIntent.putExtra("type", EChatType.PRIVATE.ordinal());
             chatIntent.putExtra("from", user.getMail());
             startActivity(chatIntent);
-        }else{
-            Log.i(TAG,"user is null");
+        } else {
+
+            LocoEvent event = eventMarkerMap.get(marker);
+            if(event != null) {
+
+                Intent chatIntent = new Intent(this, ChatActivity.class);
+                chatIntent.putExtra("type", EChatType.EVENT.ordinal());
+                chatIntent.putExtra("eventId", event.getId());
+                startActivity(chatIntent);
+
+            } else {
+
+                LocoForum forum = forumMarkerMap.get(marker);
+                if(forum != null) {
+
+                    Intent chatIntent = new Intent(this, ChatActivity.class);
+                    chatIntent.putExtra("type", EChatType.FORUM.ordinal());
+                    chatIntent.putExtra("forumId", forum.getId());
+                    startActivity(chatIntent);
+
+                } else {
+                    Log.e(TAG, "Could not find marker in the current maps");
+                }
+
+            }
+
         }
 
     }
@@ -334,7 +401,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                     dialogBundle.putString("content", "Your location services are turned off, this application cannot operate without access to your current location.\nPlease turn on location services");
                     SimpleDialog d = new SimpleDialog();
                     d.setArguments(dialogBundle);
-                    d.show(getSupportFragmentManager(), "SimpleDialog");
+                    d.show(getFragmentManager(), "SimpleDialog");
 
                 }
 
@@ -371,8 +438,15 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             }
         };
 
-        AppController.AddNewForumListener(newForumListener);
-        AppController.AddNewEventListener(newEventListener);
+        AppController.AddForumsChangedListener(newForumListener);
+        AppController.AddEventsChangedListener(newEventListener);
+
+        for (Marker marker : eventMarkerMap.keySet()) {
+            marker.remove();
+        }
+
+        RefreshForumMarkers();
+        RefreshEventMarkers();
 
     }
 
@@ -418,6 +492,8 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                     .icon(eventMarkerIcon)
                     .title(event.getName()));
 
+            Log.i("EVENTCHECK", "event name: " + event.getName());
+
             eventMarkerMap.put(marker, event);
 
         }
@@ -458,6 +534,15 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                                                 .position(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()))
                                                 .icon(myMarkerIcon));
 
+                                        cameraPosition = new CameraPosition.Builder()
+                                                .target(myMarker.getPosition())
+                                                .zoom(11)
+                                                .bearing(0)
+                                                .tilt(0)
+                                                .build();
+
+                                        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
                                         positionRetrieved = true;
 
                                     }
@@ -474,7 +559,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                                                 @Override
                                                 public void run() {
 
-                                                    Log.i(TAG, fResult.toString());
+                                                    // Log.i(TAG, fResult.toString());
                                                     if (currentUserMarkers != null) {
                                                         for (Map.Entry<Marker, LocoUser> p : currentUserMarkers.entrySet()) {
                                                             p.getKey().remove();
@@ -487,9 +572,9 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                                                         if (u.getMail().compareTo(AppController.GetMyUser().getMail()) != 0) {
 
                                                             LocoUser nUser = new LocoUser(u);
-                                                            AppController.AddUserToCache(nUser.toUser());
+                                                            AppController.AddUserToCache(nUser);
 
-                                                            Log.i(TAG, nUser.toString());
+                                                            // Log.i(TAG, nUser.toString());
                                                             if (nUser.getLocation() != null) {
 
                                                                 MarkerOptions options = new MarkerOptions()

@@ -6,7 +6,6 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.Message;
-import com.appspot.enhanced_cable_88320.aroundmeapi.model.User;
 
 import java.io.IOException;
 import java.net.URL;
@@ -14,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+
+import il.co.nolife.locotalk.DataTypes.LocoUser;
 
 /**
  * Created by Victor Belski on 9/11/2015.
@@ -31,32 +32,34 @@ public class AppController {
     private AppController() {
 
         newMessageListeners = new ArrayList<IApiCallback<Message>>();
-        newForumListeners = new ArrayList<IApiCallback<Long>>();
+        forumsChangedListeners = new ArrayList<IApiCallback<Long>>();
         newForumMsgListeners = new ArrayList<IApiCallback<Long>>();
-        newEventListeners = new ArrayList<IApiCallback<Long>>();
+        eventsChangedListeners = new ArrayList<IApiCallback<Long>>();
         newEventMsgListeners = new ArrayList<IApiCallback<Long>>();
         newFriendListeners = new ArrayList<IApiCallback<String>>();
         userPongedListener = new ArrayList<IApiCallback<String>>();
         cachedImages = new HashMap<String, Bitmap>();
         downloading = false;
         pendingDownloads = new ArrayList<IApiCallback<Void>>();
-        userCache = new HashMap<String, User>();
+        userCache = new HashMap<String, LocoUser>();
         myUser = new LocoUser();
         friends = new HashMap<>();
 
     }
 
     List<IApiCallback<Message>> newMessageListeners;
-    List<IApiCallback<Long>> newForumListeners;
+    List<IApiCallback<Long>> forumsChangedListeners;
     List<IApiCallback<Long>> newForumMsgListeners;
-    List<IApiCallback<Long>> newEventListeners;
+    List<IApiCallback<Long>> eventsChangedListeners;
     List<IApiCallback<Long>> newEventMsgListeners;
     List<IApiCallback<String>> newFriendListeners;
     List<IApiCallback<String>> userPongedListener;
+
     HashMap<String, Bitmap> cachedImages;
     Boolean downloading;
     List<IApiCallback<Void>> pendingDownloads;
-    HashMap<String, User> userCache;
+
+    HashMap<String, LocoUser> userCache;
     HashMap<String, LocoUser> friends;
 
     LocoUser myUser;
@@ -67,8 +70,8 @@ public class AppController {
         }
     }
 
-    public static void NewForum(long forumId) {
-        for (IApiCallback<Long> c : instance.newForumListeners) {
+    public static void ForumsChanged(long forumId) {
+        for (IApiCallback<Long> c : instance.forumsChangedListeners) {
             c.Invoke(forumId);
         }
     }
@@ -79,8 +82,8 @@ public class AppController {
         }
     }
 
-    public static void NewEvent(long eventId) {
-        for (IApiCallback<Long> c : instance.newEventListeners) {
+    public static void EventsChanged(long eventId) {
+        for (IApiCallback<Long> c : instance.eventsChangedListeners) {
             c.Invoke(eventId);
         }
     }
@@ -107,8 +110,8 @@ public class AppController {
         instance.newMessageListeners.add(listener);
     }
 
-    public static void AddNewForumListener(IApiCallback<Long> listener) {
-        instance.newForumListeners.add(listener);
+    public static void AddForumsChangedListener(IApiCallback<Long> listener) {
+        instance.forumsChangedListeners.add(listener);
     }
 
     public static void AddNewForumMessageListener(IApiCallback<Long> listener) {
@@ -123,8 +126,8 @@ public class AppController {
         instance.userPongedListener.add(listener);
     }
 
-    public static void AddNewEventListener(IApiCallback<Long> listener) {
-        instance.newEventListeners.add(listener);
+    public static void AddEventsChangedListener(IApiCallback<Long> listener) {
+        instance.eventsChangedListeners.add(listener);
     }
 
     public static void AddNewEventMessageListener(IApiCallback<Long> listener) {
@@ -135,16 +138,16 @@ public class AppController {
         instance.newMessageListeners.remove(listener);
     }
 
-    public static void RemoveNewForumListener(IApiCallback<Long> listener) {
-        instance.newForumListeners.remove(listener);
+    public static void RemoveForumsChangedListener(IApiCallback<Long> listener) {
+        instance.forumsChangedListeners.remove(listener);
     }
 
     public static void RemoveNewForumMessageListener(IApiCallback<Long> listener) {
         instance.newForumMsgListeners.remove(listener);
     }
 
-    public static void RemoveNewEventListener(IApiCallback<Long> listener) {
-        instance.newEventListeners.remove(listener);
+    public static void RemoveEventsChangedListener(IApiCallback<Long> listener) {
+        instance.eventsChangedListeners.remove(listener);
     }
 
     public static void RemoveNewEventMessageListener(IApiCallback<Long> listener) {
@@ -217,34 +220,34 @@ public class AppController {
 
     }
 
-    public static void AddUserToCache(User user) {
+    public static void AddUserToCache(LocoUser user) {
 
         if(!instance.userCache.containsKey(user.getMail())) {
 
             instance.userCache.put(user.getMail(), user);
-            GetImage(user.getImageUrl(), null);
+            GetImage(user.getIcon(), null);
 
         }
 
     }
 
-    public static void AddUsersToCache(Collection<User> users) {
+    public static void AddUsersToCache(Collection<LocoUser> users) {
 
-        for (User u : users) {
+        for (LocoUser u : users) {
             if(!instance.userCache.containsKey(u.getMail())) {
                 instance.userCache.put(u.getMail(), u);
-                GetImage(u.getImageUrl(), null);
+                GetImage(u.getIcon(), null);
             }
         }
 
     }
 
-    public static User GetUserFromCache(String mail) {
-        User retVal = instance.userCache.get(mail);
+    public static LocoUser GetUserFromCache(String mail) {
+        LocoUser retVal = instance.userCache.get(mail);
         if(retVal != null) {
             return retVal;
         } else {
-            return new User();
+            return new LocoUser();
         }
     }
 

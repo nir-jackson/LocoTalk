@@ -1,4 +1,4 @@
-package il.co.nolife.locotalk;
+package il.co.nolife.locotalk.DataTypes;
 
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.GeoPt;
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.User;

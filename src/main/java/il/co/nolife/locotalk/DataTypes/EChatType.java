@@ -1,4 +1,4 @@
-package il.co.nolife.locotalk;
+package il.co.nolife.locotalk.DataTypes;
 
 /**
  * Created by Victor Belski on 9/11/2015.

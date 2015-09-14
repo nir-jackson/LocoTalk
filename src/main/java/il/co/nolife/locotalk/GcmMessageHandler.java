@@ -15,6 +15,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import il.co.nolife.locotalk.DataTypes.LocoUser;
+
 /**
  * Created by Victor Belski on 9/10/2015.
  * Designed to handle all JSON based communication between LocoTal users
@@ -88,6 +90,7 @@ public class GcmMessageHandler {
 
                     long eventId = message.getLong("eventId");
                     String owner = message.getString("owner");
+                    int radius = message.getInt("radius");
                     GeoPt loc = new GeoPt();
                     float lat = (float)message.getDouble("lat");
                     float lon = (float)message.getDouble("lon");
@@ -101,7 +104,7 @@ public class GcmMessageHandler {
                     actualMessage.setFrom(mo.getString("from"));
 
                     DataAccessObject dao = new DataAccessObject(context);
-                    dao.WriteMessageToEvent(eventId, name, owner, loc, actualMessage);
+                    dao.WriteMessageToEvent(eventId, name, owner, loc, radius, actualMessage);
 
                 }
             } catch(JSONException e) {

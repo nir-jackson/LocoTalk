@@ -1,4 +1,4 @@
-package il.co.nolife.locotalk;
+package il.co.nolife.locotalk.ViewClasses;
 
 import android.app.Activity;
 import android.content.Context;
@@ -10,9 +10,12 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.appspot.enhanced_cable_88320.aroundmeapi.model.User;
-
 import java.util.List;
+
+import il.co.nolife.locotalk.AppController;
+import il.co.nolife.locotalk.DataTypes.LocoUser;
+import il.co.nolife.locotalk.IApiCallback;
+import il.co.nolife.locotalk.R;
 
 /**
  * Created by NirLapTop on 9/12/2015.

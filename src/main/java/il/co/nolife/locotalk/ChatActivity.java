@@ -1,8 +1,11 @@
 package il.co.nolife.locotalk;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,11 +17,17 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.Message;
-import com.appspot.enhanced_cable_88320.aroundmeapi.model.User;
 import com.google.api.client.util.DateTime;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+
+import il.co.nolife.locotalk.DataTypes.EChatType;
+import il.co.nolife.locotalk.DataTypes.LocoEvent;
+import il.co.nolife.locotalk.DataTypes.LocoForum;
+import il.co.nolife.locotalk.DataTypes.LocoUser;
+import il.co.nolife.locotalk.ViewClasses.ChatListAdapter;
 
 /**
  * Created by NirLapTop on 9/10/2015.
@@ -29,8 +38,8 @@ public class ChatActivity extends Activity {
     ListView list;
     TextView title;
     EditText content;
-    Button sendButton, addFriend;
-    ImageView profile;
+    Button sendButton, centerButton;
+    ImageView profileImage;
     List<Message> contentList;
 
     Intent intent;
@@ -39,6 +48,10 @@ public class ChatActivity extends Activity {
     IApiCallback<Long> forumMessageCallback;
     IApiCallback<Long> eventMessageCallback;
 
+    DataAccessObject dao;
+
+    Context appContext;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -46,14 +59,20 @@ public class ChatActivity extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.basic_chat_activity);
 
-        list = (ListView) findViewById(R.id.messagesList);
+        appContext = getApplicationContext();
+
+        dao = new DataAccessObject(appContext);
+
+        list = (ListView) findViewById(R.id.chat_message_list);
 
         intent = getIntent();
         int ex = intent.getIntExtra("type", -1);
 
         title = (TextView)findViewById(R.id.chat_title);
-        content = (EditText)findViewById(R.id.message_content);
-        sendButton = (Button)findViewById(R.id.sendbutton);
+        content = (EditText)findViewById(R.id.chat_message_content);
+        sendButton = (Button)findViewById(R.id.chat_send_button);
+        profileImage = (ImageView) findViewById(R.id.chat_profile_image);
+        centerButton = (Button) findViewById(R.id.chat_center_button);
 
         if(ex > -1) {
             EChatType type = EChatType.values()[ex];
@@ -64,35 +83,46 @@ public class ChatActivity extends Activity {
                     break;
 
                 case EVENT:
-                    EventChat(intent);
+                    EventChat();
                     break;
 
                 case FORUM:
-                    ForumChat(intent);
+                    ForumChat();
                     break;
 
             }
         }
 
+        list.setSelection(adapter.getCount() - 1);
+        adapter.sort(new Comparator<Message>() {
+            @Override
+            public int compare(Message lhs, Message rhs) {
+
+                Date left = new Date(lhs.getTimestamp().getValue());
+                Date right = new Date(rhs.getTimestamp().getValue());
+
+                if (left.after(right)) {
+                    return 1;
+                } else if (left.before(right)) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+
+            }
+        });
 
     }
 
     void PrivateChat() {
 
-        final DataAccessObject dao = new DataAccessObject(getApplicationContext());
         String mail = intent.getStringExtra("from");
-        final User user = AppController.GetUserFromCache(mail);
+        final LocoUser user = AppController.GetUserFromCache(mail);
         Log.i(getClass().toString(), user.toString());
-        String tempurl;
-        if(user.getImageUrl().indexOf("sz=50")!= -1){
-            tempurl = user.getImageUrl().replace("sz=50","sz=400");
-        }else{
-            tempurl = user.getImageUrl().replace("sz=150","sz=400");
-        }
+        String tempurl = user.getIcon().replace("sz=50", "sz=150");
 
-        Log.i(getClass().toString(),tempurl);
-        title.setText(user.getFullName());
-        final ImageView imageView = (ImageView)findViewById(R.id.profile_image);
+        Log.i(getClass().toString(), tempurl);
+        title.setText(user.getName());
 
         AppController.GetImage(tempurl, new IApiCallback<Bitmap>() {
             @Override
@@ -100,16 +130,15 @@ public class ChatActivity extends Activity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        imageView.setImageBitmap(result);
+                        profileImage.setImageBitmap(result);
                     }
                 });
             }
         });
-        contentList = dao.GetMessagesFromDirectConversation(mail);
-        adapter = new ChatListAdapter(getApplicationContext(), contentList, this);
-        list.setAdapter(adapter);
 
-        list.setSelection(adapter.getCount() - 1);
+        contentList = dao.GetMessagesFromDirectConversation(mail);
+        adapter = new ChatListAdapter(getApplicationContext(), contentList, this, false);
+        list.setAdapter(adapter);
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -138,31 +167,165 @@ public class ChatActivity extends Activity {
             }
         };
 
+        centerButton = (Button) findViewById(R.id.chat_center_button);
+
+        if(AppController.CheckIfFriend(user.getMail())) {
+            centerButton.setVisibility(View.GONE);
+        } else {
+
+            centerButton.setText("Add as Friend");
+            centerButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#339dff")));
+            centerButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    DataAccessObject dao = new DataAccessObject(getApplicationContext());
+                    dao.AddFriend(user);
+                    centerButton.setVisibility(View.GONE);
+
+                }
+            });
+
+        }
+
         AppController.AddPrivateMessageListener(messageCallback);
 
     }
 
-    void EventChat(Intent intent) {
+    void EventChat() {
 
-        DataAccessObject dao = new DataAccessObject(getApplicationContext());
-        long eventId = intent.getLongExtra("eventId", -1);
-        List<Message> messages = dao.GetAllMessagesFromEvent(eventId);
-        adapter = new ChatListAdapter(getApplicationContext(), messages, this);
-        list.setAdapter(adapter);
-        Log.i(getClass().toString(), "Event Chat");
-        profile = (ImageView)findViewById(R.id.profile_image);
-        profile.setVisibility(View.GONE);
+        final LocoEvent event = dao.GetEvent(intent.getLongExtra("eventId", -1));
+
+        if(event != null) {
+
+            profileImage.setVisibility(View.GONE);
+            centerButton.setText("Remove");
+            centerButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#dd4465")));
+            centerButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    dao.RemoveEvent(event);
+                    finish();
+
+                }
+            });
+
+            title.setText(event.getName());
+
+            contentList = dao.GetAllMessagesFromEvent(event.getId());
+            adapter = new ChatListAdapter(getApplicationContext(), contentList, this, true);
+            list.setAdapter(adapter);
+            Log.i(getClass().toString(), "Event Chat");
+
+            eventMessageCallback = new IApiCallback<Long>() {
+                @Override
+                public void Invoke(Long result) {
+
+                if(result == event.getId()) {
+
+                    contentList.clear();
+                    contentList.addAll(dao.GetAllMessagesFromEvent(event.getId()));
+                    adapter.notifyDataSetChanged();
+
+                }
+
+                }
+            };
+
+            sendButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    if(!content.getText().toString().isEmpty()) {
+
+                        ApiHandler.SendEventMessage(event, content.getText().toString());
+                        Message newMessage = new Message();
+                        newMessage.setContnet(content.getText().toString());
+                        newMessage.setFrom(AppController.GetMyUser().getMail());
+                        newMessage.setTimestamp(new DateTime(new Date()));
+                        dao.WriteMessageToEvent(event, newMessage);
+                        contentList.add(newMessage);
+                        adapter.notifyDataSetChanged();
+
+                    }
+
+                }
+            });
+
+        } else {
+            Log.e(getClass().toString(), "Could not find the event:" + intent.getLongExtra("eventId", -1));
+            finish();
+        }
 
     }
 
-    void ForumChat(Intent intent) {
+    void ForumChat() {
 
-        DataAccessObject dao = new DataAccessObject(getApplicationContext());
-        long forumId = intent.getLongExtra("forumId", -1);
-        List<Message> messages = dao.GetAllMessagesFromEvent(forumId);
-        adapter = new ChatListAdapter(getApplicationContext(), messages, this);
-        list.setAdapter(adapter);
-        Log.i(getClass().toString(), "Forum Chat");
+        final LocoForum forum = dao.GetForum(intent.getLongExtra("forumId", -1));
+
+        if(forum != null) {
+
+            profileImage.setVisibility(View.GONE);
+            centerButton.setText("Remove");
+            centerButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#dd4465")));
+            centerButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    dao.RemoveForum(forum);
+                    finish();
+
+                }
+            });
+
+            title.setText(forum.getName());
+
+            contentList = dao.GetAllMessagesFromForum(forum.getId());
+            adapter = new ChatListAdapter(getApplicationContext(), contentList, this, true);
+            list.setAdapter(adapter);
+            Log.i(getClass().toString(), "Forum Chat");
+
+            eventMessageCallback = new IApiCallback<Long>() {
+                @Override
+                public void Invoke(Long result) {
+
+                    if(result == forum.getId()) {
+
+                        contentList.clear();
+                        contentList.addAll(dao.GetAllMessagesFromForum(forum.getId()));
+                        adapter.notifyDataSetChanged();
+
+                    }
+
+                }
+            };
+
+            sendButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    if(!content.getText().toString().isEmpty()) {
+
+                        ApiHandler.SendForumMessage(forum, content.getText().toString());
+                        Message newMessage = new Message();
+                        newMessage.setContnet(content.getText().toString());
+                        newMessage.setFrom(AppController.GetMyUser().getMail());
+                        newMessage.setTimestamp(new DateTime(new Date()));
+                        dao.WriteMessageToForum(forum, newMessage);
+                        contentList.add(newMessage);
+                        adapter.notifyDataSetChanged();
+
+                    }
+
+                }
+            });
+
+        } else {
+            Log.e(getClass().toString(), "Could not find the forum:" + intent.getLongExtra("forumId", -1));
+            finish();
+        }
+
     }
 
     protected void onStop() {

@@ -1,34 +1,124 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fafaff"
+    android:padding="3dp">
 
-    <Button
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:text="New Forum"
-        android:id="@+id/new_forum_button"
-        android:layout_centerVertical="true"
-        android:layout_alignParentStart="true"
-        android:background="#999999"
-        android:textSize="40dp"
-        android:textColor="#ffffff" />
+    <LinearLayout
+        android:id="@+id/picker_button_panel"
+        android:layout_width="match_parent"
+        android:layout_height="65dp"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:weightSum="3"
+        android:paddingTop="5dp">
 
-    <Button
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:text="New Event"
-        android:id="@+id/new_event_button"
-        android:layout_alignTop="@+id/new_forum_button"
-        android:layout_alignParentEnd="true"
-        android:background="#9c39f1"
-        android:textSize="40dp"
-        android:textColor="#ffffff" />
+        <Button
+            android:layout_width="1dp"
+            android:layout_height="60dp"
+            android:text="Forum"
+            android:id="@+id/picker_forum"
+            android:textSize="20sp"
+            android:backgroundTintMode="multiply"
+            android:layout_weight="1"/>
 
-    <ImageView
-        android:layout_width="wrap_content"
+        <Button
+            android:id="@+id/picker_create"
+            android:layout_width="1dp"
+            android:layout_height="60dp"
+            android:text="Create"
+            android:textSize="20sp"
+            android:layout_weight="1"/>
+
+        <Button
+            android:layout_width="1dp"
+            android:layout_height="60dp"
+            android:text="Event"
+            android:id="@+id/picker_event"
+            android:textSize="20sp"
+            android:layout_alignParentStart="true"
+            android:backgroundTintMode="multiply"
+            android:layout_marginBottom="70dp"
+            android:layout_weight="1"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/imageView"
+        android:orientation="vertical"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:src="@drawable/ic_launcher" />
+        android:id="@+id/picker_top_panel">
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="#aaccdd"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:id="@+id/picker_name_text"
+            android:layout_marginBottom="10dp"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="Range"
+                android:textSize="25sp"
+                android:gravity="center"
+                android:id="@+id/picker_range_text"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:id="@+id/picker_add_friend"
+                android:text="Add Friend"
+                android:textSize="20sp"
+                android:backgroundTint="#eecccc"
+                android:backgroundTintMode="multiply"/>
+
+            <LinearLayout
+                android:id="@+id/picker_number_holder"
+                android:layout_width="100dp"
+                android:layout_height="60dp"
+                android:padding="3dp"
+                android:background="#dddddd"
+                android:layout_below="@id/picker_range_text"
+                android:layout_alignParentEnd="true">
+
+                <TextView
+                    android:id="@+id/picker_radius"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="0"
+                    android:textSize="20sp"
+                    android:gravity="center"
+                    android:background="#fafaff"/>
+
+            </LinearLayout>
+
+            <SeekBar
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:layout_below="@id/picker_range_text"
+                android:layout_marginEnd="10dp"
+                android:layout_toStartOf="@id/picker_number_holder"
+                android:id="@+id/picker_seek_bar"/>
+
+        </RelativeLayout>
+
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/picker_participants"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/picker_button_panel"
+        android:layout_below="@id/picker_top_panel"/>
+
 </RelativeLayout>
