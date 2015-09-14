@@ -153,6 +153,8 @@ public class ChatActivity extends Activity {
                 dao.WriteMessageToUserConversation(newMessage, true);
                 contentList.add(newMessage);
                 adapter.notifyDataSetChanged();
+                content.setText("");
+                list.setSelection(adapter.getCount() - 1);
 
             }
         });
@@ -166,6 +168,7 @@ public class ChatActivity extends Activity {
                         public void run() {
                             contentList.add(result);
                             adapter.notifyDataSetChanged();
+                            list.setSelection(adapter.getCount() - 1);
                         }
                     });
                 }

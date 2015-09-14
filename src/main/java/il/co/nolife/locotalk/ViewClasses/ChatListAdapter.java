@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -102,15 +103,15 @@ public class ChatListAdapter extends ArrayAdapter<Message> {
         holder.content.setText(messages.get(position).getContnet());
         holder.image.setImageDrawable(context.getResources().getDrawable(R.drawable.question_man));
         holder.pos = position;
+        Log.i("TEXTCHECK", "|" + AppController.GetMyUser().getMail() + "|" + messages.get(position).getFrom() + "|");
         if(AppController.GetMyUser().getMail().compareTo(messages.get(position).getFrom()) == 0) {
             holder.content.setBackgroundTintList(myColor);
             holder.content.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
+            Log.i("TEXTCHECK", "its me");
         } else {
-
             holder.content.setBackgroundTintList(whiteColor);
             holder.content.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-
-
+            Log.i("TEXTCHECK", "its not me");
         }
 
         if(showImages) {
