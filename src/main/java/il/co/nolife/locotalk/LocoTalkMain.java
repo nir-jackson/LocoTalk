@@ -566,6 +566,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                                                         }
                                                     }
                                                     currentUserMarkers = new HashMap<Marker, LocoUser>();
+                                                    reverseMarkersMap = new HashMap<String, Marker>();
 
                                                     for (UserAroundMe u : fResult) {
 
@@ -591,6 +592,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
                                                                 Marker newMarker = mMap.addMarker(options);
                                                                 currentUserMarkers.put(newMarker, nUser);
+                                                                reverseMarkersMap.put(nUser.getMail(), newMarker);
 
                                                             }
 

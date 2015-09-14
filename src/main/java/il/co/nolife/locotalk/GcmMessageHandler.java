@@ -35,14 +35,16 @@ public class GcmMessageHandler {
                 if (dataType.compareTo("ping") == 0) {
 
                     String mail = message.getString("mail");
+                    Log.i(TAG, "Dude pinged !:" + mail);
                     User myUser = ApiHandler.GetUser();
                     if (myUser != null) {
-                        ApiHandler.SendGCMMessage(mail, "{'type':'pong', 'mail':'" + myUser.getMail() + "'}");
+                        ApiHandler.SendGCMMessage(mail, "{ 'type':'pong', 'mail':'" + myUser.getMail() + "' }");
                     }
 
                 } else if (dataType.compareTo("pong") == 0) {
 
                     String mail = message.getString("mail");
+                    Log.i(TAG, "Dude ponged !:" + mail);
                     DataAccessObject dao = new DataAccessObject(context);
                     dao.ValidateFriend(mail);
                     AppController.UserPonged(mail);
