@@ -159,10 +159,15 @@ public class ChatActivity extends Activity {
 
         messageCallback = new IApiCallback<Message>() {
             @Override
-            public void Invoke(Message result) {
+            public void Invoke(final Message result) {
                 if(result.getFrom().compareTo(user.getMail()) == 0) {
-                    contentList.add(result);
-                    adapter.notifyDataSetChanged();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            contentList.add(result);
+                            adapter.notifyDataSetChanged();
+                        }
+                    });
                 }
             }
         };
