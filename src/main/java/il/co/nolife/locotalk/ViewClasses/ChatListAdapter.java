@@ -76,7 +76,7 @@ public class ChatListAdapter extends ArrayAdapter<Message> {
         messages = objects;
         myActivity = activity;
         this.showImages = showImages;
-        myColor = Color.parseColor("##a4f9ff");
+        myColor = Color.parseColor("#a4f9ff");
         whiteColor = Color.WHITE;
 
     }
