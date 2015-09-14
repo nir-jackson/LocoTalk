@@ -38,7 +38,9 @@ public class GcmMessageHandler {
                     Log.i(TAG, "Dude pinged !:" + mail);
                     User myUser = ApiHandler.GetUser();
                     if (myUser != null) {
-                        ApiHandler.SendGCMMessage(mail, "{ 'type':'pong', 'mail':'" + myUser.getMail() + "' }");
+                        String m = "{ 'type':'pong', 'mail':'" + myUser.getMail() + "' }";
+                        ApiHandler.SendGCMMessage(mail, m);
+                        Log.i(TAG, m);
                     }
 
                 } else if (dataType.compareTo("pong") == 0) {

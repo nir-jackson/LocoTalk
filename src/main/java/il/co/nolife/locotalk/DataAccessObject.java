@@ -616,7 +616,10 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        db.rawQuery("UPDATE " + FRIENDS_TABLE + " SET " + U_SAFE + "=1 WHERE " + U_MAIL + "='" + mail + "'", null);
+        ContentValues values = new ContentValues();
+        values.put(U_SAFE, 1);
+
+        db.update(FRIENDS_TABLE, values, U_MAIL + "='" + mail +"'", null);
 
     }
 

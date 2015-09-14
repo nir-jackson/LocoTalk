@@ -278,6 +278,7 @@ public class ApiHandler {
 
         if(instance.initialized) {
             instance.SendGCMMessageAsync(mail, "{ 'type': 'ping', 'mail': '" + AppController.GetMyUser().getMail() + "' }");
+            Log.i(TAG, "Sent ping to " + mail);
         } else {
 
             instance.delayedCalls.add(new IApiCallback<Void>() {
