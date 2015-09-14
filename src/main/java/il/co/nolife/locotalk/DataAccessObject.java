@@ -219,14 +219,14 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         Cursor conversation = db.rawQuery("SELECT * FROM " + DIRECT_CONVERSATIONS_TABLE + " WHERE " + M_FROM + "='" + ((myMessage)?(message.getTo()):(message.getFrom())) + "'", null);
 
-        if(conversation.getColumnCount() > 0) {
+        if(conversation.moveToFirst()) {
 
             conversation.moveToFirst();
             WriteMessageToConversation(message, conversation.getLong(conversation.getColumnIndex(C_KEY)));
 
         } else {
 
-            long convId = db.insert(CONVERSATION_TABLE, null, null);
+            long convId = db.insert(CONVERSATION_TABLE, C_KEY, null);
             WriteMessageToConversation(message, convId);
 
             ContentValues newUserConv = new ContentValues();
@@ -650,7 +650,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         List<Message> retVal = new ArrayList<Message>();
-        Cursor forum = db.rawQuery("SELECT * FROM " + FORUMS_TABLE + " WHERE " + F_KEY + "=" + forumId + " AND " + DELETED + "=0", null);
+        Cursor forum = db.rawQuery("SELECT * FROM " + FORUMS_TABLE + " WHERE " + F_KEY + "=" + forumId, null);
 
         if(forum.moveToFirst()) {
             retVal = GetMessagesFromConversation(forum.getLong(forum.getColumnIndex(C_KEY)));
@@ -667,7 +667,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         List<Message> retVal = new ArrayList<Message>();
-        Cursor forum = db.rawQuery("SELECT * FROM " + EVENTS_TABLE + " WHERE " + E_KEY + "=" + eventId + " AND " + DELETED + "=0", null);
+        Cursor forum = db.rawQuery("SELECT * FROM " + EVENTS_TABLE + " WHERE " + E_KEY + "=" + eventId, null);
 
         if(forum.moveToFirst()) {
             retVal = GetMessagesFromConversation(forum.getLong(forum.getColumnIndex(C_KEY)));
@@ -748,7 +748,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
     public List<LocoForum> GetAllForums() {
 
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + FORUMS_TABLE, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + FORUMS_TABLE + " WHERE " + DELETED + "=0", null);
         List<LocoForum> retVal = new ArrayList<LocoForum>();
 
         if(cursor.moveToFirst()) {
@@ -798,7 +798,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
     public List<LocoEvent> GetAllEvents() {
 
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + EVENTS_TABLE, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + EVENTS_TABLE + " WHERE " + DELETED + "=0", null);
         List<LocoEvent> retVal = new ArrayList<LocoEvent>();
 
         if(cursor.moveToFirst()) {
@@ -902,6 +902,8 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         db.update(FORUMS_TABLE, values, F_KEY + "=" + forum.getId(), null);
 
+        AppController.ForumsChanged(forum.getId());
+
     }
 
     public LocoEvent GetEvent(long eventId) {
@@ -940,6 +942,8 @@ public class DataAccessObject extends SQLiteOpenHelper {
         values.put(DELETED, 1);
 
         db.update(EVENTS_TABLE, values, E_KEY + "=" + event.getId(), null);
+
+        AppController.EventsChanged(event.getId());
 
     }
 
