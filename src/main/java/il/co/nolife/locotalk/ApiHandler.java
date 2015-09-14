@@ -336,9 +336,13 @@ public class ApiHandler {
             builder.append("] }");
 
             String json = builder.toString();
-
+            String myMail = AppController.GetMyUser().getMail();
             for (LocoUser user : forum.getUsers()) {
-                instance.SendGCMMessageAsync(user.getMail(), json);
+
+                String mail = user.getMail();
+                if(myMail.compareTo(mail) != 0) {
+                    instance.SendGCMMessageAsync(user.getMail(), json);
+                }
             }
 
         } else {

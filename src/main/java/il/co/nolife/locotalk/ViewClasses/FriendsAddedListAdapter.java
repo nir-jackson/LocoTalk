@@ -58,6 +58,7 @@ public class FriendsAddedListAdapter extends ArrayAdapter<String> {
                 view.setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
                 if(remaining.contains(str)) {
                     remaining.remove(str);
+                    mails.add(str);
                     autoCompleteAdapter.notifyDataSetChanged();
                 }
                 wasActual = true;
@@ -69,6 +70,7 @@ public class FriendsAddedListAdapter extends ArrayAdapter<String> {
                 if(wasActual) {
 
                     remaining.add(prev);
+                    mails.remove(prev);
                     wasActual = false;
                     prev = "";
                     autoCompleteAdapter.notifyDataSetChanged();

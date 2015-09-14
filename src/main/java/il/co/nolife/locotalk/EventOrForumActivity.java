@@ -201,15 +201,19 @@ public class EventOrForumActivity extends Activity {
 
             if (forumSelected) {
 
-                List<String> actual = new ArrayList<>();
+                HashMap<String, LocoUser> friendsMap = AppController.GetFriends();
+                List<LocoUser> actual = new ArrayList<>();
 
                 for (String p : participants) {
                     if(friendMails.contains(p)) {
-                        actual.add(p);
+                        LocoUser user = friendsMap.get(p);
+                        if(user != null) {
+                            actual.add(user);
+                        }
                     }
                 }
 
-                actual.add(AppController.GetMyUser().getMail());
+                actual.add(AppController.GetMyUser());
 
                 if(actual.size() > 1) {
 
@@ -218,17 +222,7 @@ public class EventOrForumActivity extends Activity {
                     newForum.setName(name);
                     newForum.setOwner(AppController.GetMyUser().getMail());
 
-                    HashMap<String, LocoUser> friendsMap = AppController.GetFriends();
-                    List<LocoUser> finalParticipands = new ArrayList<>();
-
-                    for (String m : actual) {
-                        LocoUser user = friendsMap.get(m);
-                        if (!finalParticipands.contains(user)) {
-                            finalParticipands.add(user);
-                        }
-                    }
-
-                    newForum.setUsers(finalParticipands);
+                    newForum.setUsers(actual);
 
                     DataAccessObject dao = new DataAccessObject(getApplicationContext());
 
@@ -239,7 +233,7 @@ public class EventOrForumActivity extends Activity {
                         long forumId = random.nextLong();
                         if(forumId != -1) {
                             newForum.setId(forumId);
-                            ret = dao.CreateOwnedForum(finalParticipands, position, name, AppController.GetMyUser().getMail(), forumId);
+                            ret = dao.CreateOwnedForum(actual, position, name, AppController.GetMyUser().getMail(), forumId);
                         }
 
                     } while(!ret);

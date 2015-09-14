@@ -37,8 +37,9 @@ public class LocoTalkMessageReceiver extends BroadcastReceiver {
 
         } else if(intent.hasExtra("message")) {
             try {
-                JSONObject json = new JSONObject(intent.getStringExtra("message"));
-                GcmMessageHandler.HandleMessage(context, json);
+                String m = intent.getStringExtra("message");
+                JSONObject json = new JSONObject(m);
+                GcmMessageHandler.HandleMessage(context, json, m);
             } catch (JSONException e) {
                 Log.e(getClass().toString(), e.getMessage());
             }

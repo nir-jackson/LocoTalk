@@ -25,7 +25,7 @@ public class GcmMessageHandler {
 
     public static final String TAG = "GcmMessageHandler";
 
-    public static void HandleMessage(Context context, JSONObject message) {
+    public static void HandleMessage(Context context, JSONObject message, String orig) {
 
         ApiHandler.Initialize(context);
         String dataType = message.optString("type");
@@ -112,7 +112,7 @@ public class GcmMessageHandler {
 
                 }
             } catch(JSONException e) {
-                Log.e(TAG, "Could not parse GCM Message of type '" + dataType + "': " + e.getMessage());
+                Log.e(TAG, "Could not parse GCM Message of type '" + dataType + "': " + e.getMessage() + ", original message: " + orig);
             }
         }
 
