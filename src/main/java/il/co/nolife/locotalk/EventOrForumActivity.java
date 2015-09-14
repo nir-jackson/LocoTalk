@@ -298,9 +298,7 @@ public class EventOrForumActivity extends Activity {
     }
 
     public static void Reset() {
-
         participants = new ArrayList<>();
-
     }
 
 }

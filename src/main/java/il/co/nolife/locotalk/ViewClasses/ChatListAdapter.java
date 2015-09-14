@@ -6,6 +6,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -77,7 +78,7 @@ public class ChatListAdapter extends ArrayAdapter<Message> {
         messages = objects;
         myActivity = activity;
         this.showImages = showImages;
-        myColor = ColorStateList.valueOf(Color.parseColor("#e3e3f3"));
+        myColor = ColorStateList.valueOf(Color.parseColor("#eeeeff"));
         whiteColor = ColorStateList.valueOf(Color.WHITE);
 
     }
@@ -105,13 +106,17 @@ public class ChatListAdapter extends ArrayAdapter<Message> {
         holder.pos = position;
         Log.i("TEXTCHECK", "|" + AppController.GetMyUser().getMail() + "|" + messages.get(position).getFrom() + "|");
         if(AppController.GetMyUser().getMail().compareTo(messages.get(position).getFrom()) == 0) {
+
             holder.content.setBackgroundTintList(myColor);
-            holder.content.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
+            holder.content.setGravity(Gravity.END);
             Log.i("TEXTCHECK", "its me");
+
         } else {
+
             holder.content.setBackgroundTintList(whiteColor);
-            holder.content.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+            holder.content.setGravity(Gravity.START);
             Log.i("TEXTCHECK", "its not me");
+
         }
 
         if(showImages) {
