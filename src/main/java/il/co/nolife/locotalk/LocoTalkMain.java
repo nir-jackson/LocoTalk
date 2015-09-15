@@ -610,7 +610,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                                                     .icon(myMarkerIcon));
 
 
-                                            if(mMap.getCameraPosition().zoom < 12) {
+                                            if(mMap.getCameraPosition().zoom < 5) {
 
                                                 cameraPosition = new CameraPosition.Builder()
                                                         .target(myMarker.getPosition())
