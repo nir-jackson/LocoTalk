@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
@@ -153,8 +154,6 @@ public class ChatActivity extends Activity {
                 ApiHandler.SendMessageToUser(newMessage, null);
                 newMessage.setTimestamp(new DateTime(new Date()));
                 dao.WriteMessageToUserConversation(newMessage, true);
-                contentList.add(newMessage);
-                adapter.notifyDataSetChanged();
                 content.setText("");
                 list.setSelection(adapter.getCount() - 1);
 
@@ -195,7 +194,9 @@ public class ChatActivity extends Activity {
 
         if(event != null) {
 
-            profileImage.setVisibility(View.GONE);
+            ViewGroup.LayoutParams params = profileImage.getLayoutParams();
+            params.width = 0;
+            profileImage.setLayoutParams(params);
             centerButton.setText("Remove");
             centerButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#dd4465")));
             centerButton.setOnClickListener(new View.OnClickListener() {
@@ -242,8 +243,7 @@ public class ChatActivity extends Activity {
                         newMessage.setFrom(AppController.GetMyUser().getMail());
                         newMessage.setTimestamp(new DateTime(new Date()));
                         dao.WriteMessageToEvent(event, newMessage);
-                        contentList.add(newMessage);
-                        adapter.notifyDataSetChanged();
+                        content.setText("");
 
                     }
 
@@ -263,7 +263,9 @@ public class ChatActivity extends Activity {
 
         if(forum != null) {
 
-            profileImage.setVisibility(View.GONE);
+            ViewGroup.LayoutParams params = profileImage.getLayoutParams();
+            params.width = 0;
+            profileImage.setLayoutParams(params);
             centerButton.setText("Remove");
             centerButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#dd4465")));
             centerButton.setOnClickListener(new View.OnClickListener() {
@@ -310,8 +312,6 @@ public class ChatActivity extends Activity {
                         newMessage.setFrom(AppController.GetMyUser().getMail());
                         newMessage.setTimestamp(new DateTime(new Date()));
                         dao.WriteMessageToForum(forum, newMessage);
-                        contentList.add(newMessage);
-                        adapter.notifyDataSetChanged();
 
                     }
 

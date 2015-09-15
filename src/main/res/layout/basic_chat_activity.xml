@@ -21,12 +21,12 @@
                 android:layout_height="130dp"
                 android:id="@+id/chat_profile_image"
                 android:src="@drawable/question_man"
+
                 />
 
             <RelativeLayout
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:orientation="vertical"
                 android:padding="4dp">
 
                 <Button
@@ -41,7 +41,7 @@
 
                 <TextView
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
+                    android:layout_height="wrap_content"
                     android:layout_above="@id/chat_center_button"
                     android:ems="10"
                     android:id="@+id/chat_title"

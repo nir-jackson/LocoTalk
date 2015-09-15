@@ -67,9 +67,9 @@ public class ChatListAdapter extends ArrayAdapter<Message> {
     Activity myActivity;
     int myColor;
     int whiteColor;
-    Boolean showImages;
+    boolean showImages;
 
-    public ChatListAdapter(Context context, List<Message> objects, Activity activity, Boolean showImages) {
+    public ChatListAdapter(Context context, List<Message> objects, Activity activity, boolean showImages) {
         super(context, R.layout.chat_item, objects);
 
         this.context = context;

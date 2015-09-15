@@ -45,7 +45,7 @@ public class SimpleDialog extends DialogFragment {
         String positive = args.getString("positive");
         String negative = args.getString("negative");
 
-        Boolean writeSingle = true;
+        boolean writeSingle = true;
         builder.setView(layout);
         if((positive != null) && (negative != null)) {
             if ((!positive.isEmpty()) && (!negative.isEmpty())) {

@@ -84,11 +84,11 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     BitmapDescriptor eventMarkerIcon;
 
     Thread workerThread;
-    Boolean pause = false;
-    Boolean skipSleep = false;
-    Boolean positionRetrieved = false;
-    Boolean waitingForLocationServices = false;
-    Boolean inUserDrawingPhase = false;
+    boolean pause = false;
+    boolean skipSleep = false;
+    boolean positionRetrieved = false;
+    boolean waitingForLocationServices = false;
+    boolean inUserDrawingPhase = false;
     int sleepTime;
 
     DataAccessObject dao;
@@ -292,8 +292,11 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                 mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(Marker marker) {
-                        //MarkerClicked(marker);
+
                         LocoEvent event = eventMarkerMap.get(marker);
+                        if(eventRadius != null) {
+                            eventRadius.remove();
+                        }
                         if (event != null) {
                             selectedMarker = marker;
 
@@ -306,6 +309,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                             Log.i("ClickCheck", "Selecting " + selectedMarker.getTitle());
                         }
                         return false;
+
                     }
                 });
 
@@ -559,17 +563,23 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
         }
 
+        if(eventRadius != null) {
+            eventRadius.remove();
+            eventRadius = null;
+        }
+
     }
 
     void RefreshFriendsMarkers() {
 
-        Collection<LocoUser> friends = AppController.GetFriends().values();
         for(Marker marker : friendsMarkersMap.keySet()) {
             marker.remove();
         }
 
         friendsMarkersMap = new HashMap<>();
         reverseFriendsMap = new HashMap<>();
+
+        Collection<LocoUser> friends = AppController.GetFriends().values();
 
         for (LocoUser friend : friends) {
 
@@ -594,6 +604,8 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
     public void LocationServiceEnabled() {
 
+        final String TAG = "WorkerThread";
+
         pause = false;
         Log.i(TAG, "Starting worker");
         if(workerThread == null) {
@@ -601,7 +613,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
                 @Override
                 public void run() {
-                    Log.i(TAG, pause.toString());
+                    Log.i(TAG, (pause) ? ("true") : ("false"));
                     while (!pause) {
 
                         sleepTime = 30000;

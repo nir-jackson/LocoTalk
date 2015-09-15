@@ -31,7 +31,7 @@ public class FriendsAddedListAdapter extends ArrayAdapter<String> {
     class MyTextWatcher implements TextWatcher {
 
         AutoCompleteTextView view;
-        Boolean wasActual;
+        boolean wasActual;
         String prev;
 
         public MyTextWatcher(AutoCompleteTextView view) {

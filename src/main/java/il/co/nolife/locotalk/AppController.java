@@ -37,7 +37,7 @@ public class AppController {
             point = loc;
         }
 
-        Boolean checkIfInRange(GeoPt point) {
+        boolean checkIfInRange(GeoPt point) {
             return DistFrom(point) <= radius;
         }
 
@@ -103,7 +103,7 @@ public class AppController {
     List<IApiCallback<String>> userPongedListener;
 
     HashMap<String, Bitmap> cachedImages;
-    Boolean downloading;
+    boolean downloading;
     List<IApiCallback<Void>> pendingDownloads;
 
     HashMap<String, LocoUser> allUsers;
@@ -312,11 +312,11 @@ public class AppController {
 
     }
 
-    public static Boolean CheckIfFriend(String mail) {
+    public static boolean CheckIfFriend(String mail) {
         return instance.friends.containsKey(mail);
     }
 
-    public static Boolean CheckIfSafeFriend(String mail) {
+    public static boolean CheckIfSafeFriend(String mail) {
 
         LocoUser friend = instance.friends.get(mail);
         if(friend != null) {
@@ -327,11 +327,11 @@ public class AppController {
 
     }
 
-    public static Boolean CheckKnownUser(String mail) {
+    public static boolean CheckKnownUser(String mail) {
         return instance.allUsers.containsKey(mail);
     }
 
-    public static Boolean CheckIfSafe(String mail) {
+    public static boolean CheckIfSafe(String mail) {
 
         LocoUser user = instance.allUsers.get(mail);
         if(user != null) {

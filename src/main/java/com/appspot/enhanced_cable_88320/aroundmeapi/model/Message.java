@@ -41,7 +41,7 @@ public final class Message extends com.google.api.client.json.GenericJson {
    * The value may be {@code null}.
    */
   @com.google.api.client.util.Key
-  private java.lang.Boolean downloaded;
+  private java.lang.boolean downloaded;
 
   /**
    * The value may be {@code null}.
@@ -97,14 +97,14 @@ public final class Message extends com.google.api.client.json.GenericJson {
   /**
    * @return value or {@code null} for none
    */
-  public java.lang.Boolean getDownloaded() {
+  public java.lang.boolean getDownloaded() {
     return downloaded;
   }
 
   /**
    * @param downloaded downloaded or {@code null} for none
    */
-  public Message setDownloaded(java.lang.Boolean downloaded) {
+  public Message setDownloaded(java.lang.boolean downloaded) {
     this.downloaded = downloaded;
     return this;
   }

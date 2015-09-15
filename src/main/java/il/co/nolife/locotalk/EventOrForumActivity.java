@@ -53,7 +53,7 @@ public class EventOrForumActivity extends Activity {
     List<String> friendMails;
     FriendsAddedListAdapter adapter;
 
-    Boolean forumSelected;
+    boolean forumSelected;
 
     GeoPt position;
 
@@ -226,7 +226,7 @@ public class EventOrForumActivity extends Activity {
 
                     DataAccessObject dao = new DataAccessObject(getApplicationContext());
 
-                    Boolean ret = false;
+                    boolean ret = false;
                     do {
 
                         SecureRandom random = new SecureRandom();
@@ -267,7 +267,7 @@ public class EventOrForumActivity extends Activity {
 
                     DataAccessObject dao = new DataAccessObject(getApplicationContext());
 
-                    Boolean ret = false;
+                    boolean ret = false;
 
                     do {
 

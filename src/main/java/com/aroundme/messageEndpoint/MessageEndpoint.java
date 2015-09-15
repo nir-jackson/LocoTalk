@@ -181,7 +181,7 @@ public class MessageEndpoint extends com.google.api.client.googleapis.services.j
     }
 
     @Override
-    public ListMessages setPrettyPrint(java.lang.Boolean prettyPrint) {
+    public ListMessages setPrettyPrint(java.lang.boolean prettyPrint) {
       return (ListMessages) super.setPrettyPrint(prettyPrint);
     }
 
@@ -289,7 +289,7 @@ public class MessageEndpoint extends com.google.api.client.googleapis.services.j
     }
 
     @Override
-    public SendMessage setPrettyPrint(java.lang.Boolean prettyPrint) {
+    public SendMessage setPrettyPrint(java.lang.boolean prettyPrint) {
       return (SendMessage) super.setPrettyPrint(prettyPrint);
     }
 

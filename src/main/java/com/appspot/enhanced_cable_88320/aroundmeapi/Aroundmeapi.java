@@ -183,7 +183,7 @@ public class Aroundmeapi extends com.google.api.client.googleapis.services.json.
     }
 
     @Override
-    public GetAllUsers setPrettyPrint(java.lang.Boolean prettyPrint) {
+    public GetAllUsers setPrettyPrint(java.lang.boolean prettyPrint) {
       return (GetAllUsers) super.setPrettyPrint(prettyPrint);
     }
 
@@ -285,7 +285,7 @@ public class Aroundmeapi extends com.google.api.client.googleapis.services.json.
     }
 
     @Override
-    public GetMessage setPrettyPrint(java.lang.Boolean prettyPrint) {
+    public GetMessage setPrettyPrint(java.lang.boolean prettyPrint) {
       return (GetMessage) super.setPrettyPrint(prettyPrint);
     }
 
@@ -396,7 +396,7 @@ public class Aroundmeapi extends com.google.api.client.googleapis.services.json.
     }
 
     @Override
-    public GetUsersAroundMe setPrettyPrint(java.lang.Boolean prettyPrint) {
+    public GetUsersAroundMe setPrettyPrint(java.lang.boolean prettyPrint) {
       return (GetUsersAroundMe) super.setPrettyPrint(prettyPrint);
     }
 
@@ -539,7 +539,7 @@ public class Aroundmeapi extends com.google.api.client.googleapis.services.json.
     }
 
     @Override
-    public Login setPrettyPrint(java.lang.Boolean prettyPrint) {
+    public Login setPrettyPrint(java.lang.boolean prettyPrint) {
       return (Login) super.setPrettyPrint(prettyPrint);
     }
 
@@ -660,7 +660,7 @@ public class Aroundmeapi extends com.google.api.client.googleapis.services.json.
     }
 
     @Override
-    public Register setPrettyPrint(java.lang.Boolean prettyPrint) {
+    public Register setPrettyPrint(java.lang.boolean prettyPrint) {
       return (Register) super.setPrettyPrint(prettyPrint);
     }
 
@@ -739,7 +739,7 @@ public class Aroundmeapi extends com.google.api.client.googleapis.services.json.
     }
 
     @Override
-    public ReportUserLocation setPrettyPrint(java.lang.Boolean prettyPrint) {
+    public ReportUserLocation setPrettyPrint(java.lang.boolean prettyPrint) {
       return (ReportUserLocation) super.setPrettyPrint(prettyPrint);
     }
 
@@ -834,7 +834,7 @@ public class Aroundmeapi extends com.google.api.client.googleapis.services.json.
     }
 
     @Override
-    public SendGcmMessage setPrettyPrint(java.lang.Boolean prettyPrint) {
+    public SendGcmMessage setPrettyPrint(java.lang.boolean prettyPrint) {
       return (SendGcmMessage) super.setPrettyPrint(prettyPrint);
     }
 
@@ -940,7 +940,7 @@ public class Aroundmeapi extends com.google.api.client.googleapis.services.json.
     }
 
     @Override
-    public SendMessage setPrettyPrint(java.lang.Boolean prettyPrint) {
+    public SendMessage setPrettyPrint(java.lang.boolean prettyPrint) {
       return (SendMessage) super.setPrettyPrint(prettyPrint);
     }
 

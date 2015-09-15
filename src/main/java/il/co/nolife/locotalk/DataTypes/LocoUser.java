@@ -14,8 +14,8 @@ public class LocoUser {
     String name;
     String icon;
     GeoPt location;
-    Boolean safe;
-    Boolean friend;
+    boolean safe;
+    boolean friend;
 
     public LocoUser() {
 
@@ -110,19 +110,19 @@ public class LocoUser {
         this.location = location;
     }
 
-    public Boolean getSafe() {
+    public boolean getSafe() {
         return safe;
     }
 
-    public void setSafe(Boolean safe) {
+    public void setSafe(boolean safe) {
         this.safe = safe;
     }
 
-    public Boolean getFriend() {
+    public boolean getFriend() {
         return friend;
     }
 
-    public void setFriend(Boolean friend) {
+    public void setFriend(boolean friend) {
         this.friend = friend;
     }
 

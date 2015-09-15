@@ -184,7 +184,7 @@ public class Deviceinfoendpoint extends com.google.api.client.googleapis.service
     }
 
     @Override
-    public GetDeviceInfo setPrettyPrint(java.lang.Boolean prettyPrint) {
+    public GetDeviceInfo setPrettyPrint(java.lang.boolean prettyPrint) {
       return (GetDeviceInfo) super.setPrettyPrint(prettyPrint);
     }
 
@@ -276,7 +276,7 @@ public class Deviceinfoendpoint extends com.google.api.client.googleapis.service
     }
 
     @Override
-    public InsertDeviceInfo setPrettyPrint(java.lang.Boolean prettyPrint) {
+    public InsertDeviceInfo setPrettyPrint(java.lang.boolean prettyPrint) {
       return (InsertDeviceInfo) super.setPrettyPrint(prettyPrint);
     }
 
@@ -361,7 +361,7 @@ public class Deviceinfoendpoint extends com.google.api.client.googleapis.service
     }
 
     @Override
-    public ListDeviceInfo setPrettyPrint(java.lang.Boolean prettyPrint) {
+    public ListDeviceInfo setPrettyPrint(java.lang.boolean prettyPrint) {
       return (ListDeviceInfo) super.setPrettyPrint(prettyPrint);
     }
 
@@ -469,7 +469,7 @@ public class Deviceinfoendpoint extends com.google.api.client.googleapis.service
     }
 
     @Override
-    public RemoveDeviceInfo setPrettyPrint(java.lang.Boolean prettyPrint) {
+    public RemoveDeviceInfo setPrettyPrint(java.lang.boolean prettyPrint) {
       return (RemoveDeviceInfo) super.setPrettyPrint(prettyPrint);
     }
 
@@ -561,7 +561,7 @@ public class Deviceinfoendpoint extends com.google.api.client.googleapis.service
     }
 
     @Override
-    public UpdateDeviceInfo setPrettyPrint(java.lang.Boolean prettyPrint) {
+    public UpdateDeviceInfo setPrettyPrint(java.lang.boolean prettyPrint) {
       return (UpdateDeviceInfo) super.setPrettyPrint(prettyPrint);
     }
 

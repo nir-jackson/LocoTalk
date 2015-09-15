@@ -49,7 +49,7 @@ public class ApiHandler {
 
     List<IApiCallback<Void>> delayedCalls;
 
-    Boolean initialized = false;
+    boolean initialized = false;
 
     ApiHandler() {
 
@@ -815,21 +815,6 @@ public class ApiHandler {
                         onEnd.Invoke(false);
                     }
                 }
-
-                return null;
-            }
-        }.execute();
-
-    }
-
-    void SendCreateForum(final LocoForum forum, final IApiCallback<Boolean> onEnd) {
-
-        new AsyncTask<Void, Void, Void>() {
-
-            @Override
-            protected Void doInBackground(Void... params) {
-
-
 
                 return null;
             }

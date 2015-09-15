@@ -216,7 +216,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
     }
 
-    public void WriteMessageToUserConversation(Message message, Boolean myMessage) {
+    public void WriteMessageToUserConversation(Message message, boolean myMessage) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -245,7 +245,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
     }
 
-    public Boolean CreateOwnedForum(List<LocoUser> uList, GeoPt pt, String name, String owner, long forumId) {
+    public boolean CreateOwnedForum(List<LocoUser> uList, GeoPt pt, String name, String owner, long forumId) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -445,7 +445,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
         WriteMessageToForum(forum.getId(), forum.getOwner(), message);
     }
 
-    public Boolean CreateOwnedEvent(GeoPt loc, String name, String owner, int radius, long eventId) {
+    public boolean CreateOwnedEvent(GeoPt loc, String name, String owner, int radius, long eventId) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 

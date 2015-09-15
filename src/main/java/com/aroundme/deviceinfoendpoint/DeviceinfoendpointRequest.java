@@ -123,17 +123,17 @@ public abstract class DeviceinfoendpointRequest<T> extends com.google.api.client
 
   /** Returns response with indentations and line breaks. */
   @com.google.api.client.util.Key
-  private java.lang.Boolean prettyPrint;
+  private java.lang.boolean prettyPrint;
 
   /**
    * Returns response with indentations and line breaks. [default: true]
    */
-  public java.lang.Boolean getPrettyPrint() {
+  public java.lang.boolean getPrettyPrint() {
     return prettyPrint;
   }
 
   /** Returns response with indentations and line breaks. */
-  public DeviceinfoendpointRequest<T> setPrettyPrint(java.lang.Boolean prettyPrint) {
+  public DeviceinfoendpointRequest<T> setPrettyPrint(java.lang.boolean prettyPrint) {
     this.prettyPrint = prettyPrint;
     return this;
   }
