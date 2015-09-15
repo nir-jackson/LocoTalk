@@ -293,7 +293,6 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                     @Override
                     public boolean onMarkerClick(Marker marker) {
 
-
                         if (eventRadius != null) {
                             eventRadius.remove();
                         }
@@ -325,16 +324,16 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
                                     Log.i("ClickCheck", "Selecting " + selectedMarker.getTitle());
                                 }
-                                return false;
 
                             }
 
                         }
 
+                        return false;
+
                     }
 
-                }
-            });
+                });
 
                 mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
                     @Override
