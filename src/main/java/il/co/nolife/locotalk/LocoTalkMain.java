@@ -293,25 +293,48 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                     @Override
                     public boolean onMarkerClick(Marker marker) {
 
-                        LocoEvent event = eventMarkerMap.get(marker);
-                        if(eventRadius != null) {
+
+                        if (eventRadius != null) {
                             eventRadius.remove();
                         }
-                        if (event != null) {
-                            selectedMarker = marker;
 
-                            eventRadius = mMap.addCircle(new CircleOptions()
-                                    .center(new LatLng(event.getLocation().getLatitude(), event.getLocation().getLongitude()))
-                                    .radius(20000)
-                                    .strokeWidth(3)
-                                    .strokeColor(eventCircleColor));
+                        LocoUser user = currentUserMap.get(marker);
 
-                            Log.i("ClickCheck", "Selecting " + selectedMarker.getTitle());
+                        if (user != null) {
+                            if (!user.getSafe()) {
+                                ApiHandler.Ping(user.getMail());
+                            }
+                        } else {
+
+                            user = friendsMarkersMap.get(marker);
+                            if (user != null) {
+                                if (!user.getSafe()) {
+                                    ApiHandler.Ping(user.getMail());
+                                }
+                            } else {
+
+                                LocoEvent event = eventMarkerMap.get(marker);
+                                if (event != null) {
+                                    selectedMarker = marker;
+
+                                    eventRadius = mMap.addCircle(new CircleOptions()
+                                            .center(new LatLng(event.getLocation().getLatitude(), event.getLocation().getLongitude()))
+                                            .radius(20000)
+                                            .strokeWidth(3)
+                                            .strokeColor(eventCircleColor));
+
+                                    Log.i("ClickCheck", "Selecting " + selectedMarker.getTitle());
+                                }
+                                return false;
+
+                            }
+
                         }
-                        return false;
 
                     }
-                });
+
+                }
+            });
 
                 mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
                     @Override
