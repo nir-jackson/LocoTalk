@@ -28,7 +28,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
     public static final String TAG = "DataAccessObject";
 
-    public static final int DATABASE_VERSION = 10;
+    public static final int DATABASE_VERSION = 11;
     public static final String DATABASE_NAME = "areaChat";
 
     public static final String CONVERSATION_TABLE = "conversations";
@@ -60,6 +60,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
     public static final String U_MAIL = "mail";
     public static final String U_SAFE = "safe";
     public static final String U_FRIEND = "friend";
+    public static final String U_IMAGE = "icon";
 
     public static final String EVENT_COLLISIONS_TABLE = "eventCollisions";
     public static final String FORUM_COLLISIONS_TABLE = "forumCollisions";
@@ -364,6 +365,36 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
     }
 
+    public void RemoveUserFromForum(LocoForum forum, String user) {
+
+        SQLiteDatabase db =this.getWritableDatabase();
+
+        Cursor collision = db.rawQuery("SELECT * FROM " + FORUM_COLLISIONS_TABLE + " WHERE " + COL_FROM + "=" + forum.getId(), null);
+
+        if(collision.moveToFirst()) {
+
+            do {
+
+                if (collision.getString(collision.getColumnIndex(OWNER)).compareTo(forum.getOwner()) == 0) {
+
+                    long resolvedForumId = collision.getLong(collision.getColumnIndex(COL_TO));
+                    db.delete(FORUM_USERS_TABLE, F_KEY + "=" + resolvedForumId + " AND " + U_MAIL + "='" + user + "'", null);
+                    break;
+
+                }
+
+            } while(collision.moveToNext());
+
+        } else {
+
+            db.delete(FORUM_USERS_TABLE, F_KEY + "=" + forum.getId() + " AND " + U_MAIL + "='" + user + "'", null);
+
+        }
+
+        collision.close();
+
+    }
+
     public void WriteMessageToForum(long forumId, String owner, Message message) {
 
         SQLiteDatabase db = this.getWritableDatabase();
@@ -374,22 +405,17 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
             do {
 
-                long collidingForumId = collision.getLong(collision.getColumnIndex(COL_FROM));
-                if(collidingForumId == forumId) {
+                if (collision.getString(collision.getColumnIndex(OWNER)).compareTo(owner) == 0) {
 
-                    if (collision.getString(collision.getColumnIndex(OWNER)).compareTo(owner) == 0) {
-
-                        long resolvedForumId = collision.getLong(collision.getColumnIndex(COL_TO));
-                        Cursor forum = db.rawQuery("SELECT * FROM " + FORUMS_TABLE + " WHERE " + F_KEY + "=" + resolvedForumId, null);
-                        if(forum.moveToFirst()) {
-                            WriteMessageToConversation(message, forum.getLong(forum.getColumnIndex(C_KEY)));
-                            AppController.NewForumMessage(resolvedForumId);
-                            break;
-                        }
-
-                        forum.close();
-
+                    long resolvedForumId = collision.getLong(collision.getColumnIndex(COL_TO));
+                    Cursor forum = db.rawQuery("SELECT * FROM " + FORUMS_TABLE + " WHERE " + F_KEY + "=" + resolvedForumId, null);
+                    if(forum.moveToFirst()) {
+                        WriteMessageToConversation(message, forum.getLong(forum.getColumnIndex(C_KEY)));
+                        AppController.NewForumMessage(resolvedForumId);
+                        break;
                     }
+
+                    forum.close();
 
                 }
 
@@ -582,9 +608,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
     }
 
     public void WriteMessageToEvent(LocoEvent event, Message message) {
-
         WriteMessageToEvent(event.getId(), event.getName(), event.getOwner(), event.getLocation(), event.getRadius(), message);
-
     }
 
     public void AddUser(LocoUser user) {
@@ -604,6 +628,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
             values.put(LOC_LON, user.getLocation().getLongitude());
             values.put(U_SAFE, user.getSafe());
             values.put(U_FRIEND, user.getFriend());
+            values.put(U_IMAGE, user.getIcon());
 
             db.insert(USERS_TABLE, null, values);
 
@@ -626,6 +651,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
             values.put(LOC_LON, user.getLocation().getLongitude());
             values.put(U_SAFE, user.getSafe());
             values.put(U_FRIEND, user.getFriend());
+            values.put(U_IMAGE, user.getIcon());
 
             db.insert(USERS_TABLE, null, values);
 
@@ -679,8 +705,6 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
             do {
 
-                DatabaseUtils.dumpCurrentRow(cursor);
-
                 LocoUser user = new LocoUser();
                 GeoPt loc = new GeoPt();
                 loc.setLatitude(cursor.getFloat(cursor.getColumnIndex(LOC_LAT)));
@@ -688,6 +712,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
                 user.setLocation(loc);
                 user.setMail(cursor.getString(cursor.getColumnIndex(U_MAIL)));
                 user.setName(cursor.getString(cursor.getColumnIndex(NAME)));
+                user.setIcon(cursor.getString(cursor.getColumnIndex(U_IMAGE)));
                 int friend = cursor.getInt(cursor.getColumnIndex(U_FRIEND));
                 if(friend == 1) {
                     user.setFriend(true);
@@ -713,7 +738,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        List<Message> retVal = new ArrayList<Message>();
+        List<Message> retVal = new ArrayList<>();
         Cursor forum = db.rawQuery("SELECT * FROM " + FORUMS_TABLE + " WHERE " + F_KEY + "=" + forumId, null);
 
         if(forum.moveToFirst()) {
@@ -730,7 +755,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        List<Message> retVal = new ArrayList<Message>();
+        List<Message> retVal = new ArrayList<>();
         Cursor forum = db.rawQuery("SELECT * FROM " + EVENTS_TABLE + " WHERE " + E_KEY + "=" + eventId, null);
 
         if(forum.moveToFirst()) {
@@ -749,7 +774,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         Cursor cursor = db.rawQuery("SELECT * FROM " + USERS_TABLE + " WHERE " + U_SAFE + "=1", null);
 
-        List<LocoUser> retVal = new ArrayList<LocoUser>();
+        List<LocoUser> retVal = new ArrayList<>();
 
         if(cursor.moveToFirst()) {
 
@@ -762,6 +787,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
                 u.setLocation(loc);
                 u.setMail(cursor.getString(cursor.getColumnIndex(U_MAIL)));
                 u.setName(cursor.getString(cursor.getColumnIndex(NAME)));
+                u.setIcon(cursor.getString(cursor.getColumnIndex(U_IMAGE)));
                 int friend = cursor.getInt(cursor.getColumnIndex(U_FRIEND));
                 if(friend == 1) {
                     u.setFriend(true);
@@ -786,7 +812,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         Cursor cursor = db.rawQuery("SELECT * FROM " + USERS_TABLE + " WHERE " + U_FRIEND + "=1", null);
 
-        List<LocoUser> retVal = new ArrayList<LocoUser>();
+        List<LocoUser> retVal = new ArrayList<>();
 
         if(cursor.moveToFirst()) {
 
@@ -799,6 +825,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
                 u.setLocation(loc);
                 u.setMail(cursor.getString(cursor.getColumnIndex(U_MAIL)));
                 u.setName(cursor.getString(cursor.getColumnIndex(NAME)));
+                u.setIcon(cursor.getString(cursor.getColumnIndex(U_IMAGE)));
                 int safe = cursor.getInt(cursor.getColumnIndex(U_SAFE));
                 if(safe != 0) {
                     u.setSafe(true);
@@ -821,7 +848,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + FORUMS_TABLE + " WHERE " + DELETED + "=0", null);
-        List<LocoForum> retVal = new ArrayList<LocoForum>();
+        List<LocoForum> retVal = new ArrayList<>();
 
         if(cursor.moveToFirst()) {
 
@@ -838,7 +865,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
                 forum.setConversation(cursor.getLong(cursor.getColumnIndex(C_KEY)));
 
                 Cursor users = db.rawQuery("SELECT * FROM " + FORUM_USERS_TABLE + " WHERE " + F_KEY + "=" + forum.getId(), null);
-                List<LocoUser> uList = new ArrayList<LocoUser>();
+                List<LocoUser> uList = new ArrayList<>();
 
                 if(users.moveToFirst()) {
 
@@ -871,7 +898,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + EVENTS_TABLE + " WHERE " + DELETED + "=0", null);
-        List<LocoEvent> retVal = new ArrayList<LocoEvent>();
+        List<LocoEvent> retVal = new ArrayList<>();
 
         if(cursor.moveToFirst()) {
 
@@ -905,7 +932,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        List<Message> retVal = new ArrayList<Message>();
+        List<Message> retVal = new ArrayList<>();
         Cursor directCov = db.rawQuery("SELECT * FROM " + DIRECT_CONVERSATIONS_TABLE + " WHERE " + M_FROM + "='" + mail + "'", null);
 
         if(directCov.moveToFirst()) {
@@ -938,7 +965,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
             newForum.setConversation(cursor.getLong(cursor.getColumnIndex(C_KEY)));
 
             Cursor users = db.rawQuery("SELECT * FROM " + FORUM_USERS_TABLE + " WHERE " + F_KEY + "=" + newForum.getId(), null);
-            List<LocoUser> uList = new ArrayList<LocoUser>();
+            List<LocoUser> uList = new ArrayList<>();
 
             if(users.moveToFirst()) {
 

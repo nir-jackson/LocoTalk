@@ -455,6 +455,45 @@ public class ApiHandler {
 
     }
 
+    public static void RemoveFromForum(final LocoForum forum) {
+
+        if(instance.initialized) {
+
+            StringBuilder builder = new StringBuilder();
+
+            builder.append("{ 'type' : 'removeForum', 'forumId':");
+            builder.append(forum.getId());
+            builder.append(", 'owner':'");
+            builder.append(forum.getOwner());
+            builder.append("', 'user':");
+            builder.append(AppController.GetMyUser().getMail());
+            builder.append("' }");
+
+            final String json = builder.toString();
+
+            String myMail = AppController.GetMyUser().getMail();
+            for (LocoUser user : forum.getUsers()) {
+
+                if(myMail.compareTo(user.getMail()) != 0) {
+                    instance.SendGCMMessageAsync(user.getMail(), json);
+                }
+
+            }
+
+        } else {
+
+            instance.delayedCalls.add(new IApiCallback<Void>() {
+                @Override
+                public void Invoke(Void result) {
+                    RemoveFromForum(forum);
+                }
+            });
+
+        }
+
+
+    }
+
     /**
      * Registers the application with GCM servers asynchronously.
      * <p>

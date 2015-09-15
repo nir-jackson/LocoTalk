@@ -52,6 +52,8 @@ public class ChatActivity extends Activity {
 
     Context appContext;
 
+    LocoUser user;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -117,7 +119,7 @@ public class ChatActivity extends Activity {
     void PrivateChat() {
 
         String mail = intent.getStringExtra("from");
-        final LocoUser user = AppController.GetUser(mail);
+        user = AppController.GetUser(mail);
         Log.i(getClass().toString(), user.toString());
         String tempurl = user.getIcon().replace("sz=50", "sz=150");
 
@@ -178,22 +180,9 @@ public class ChatActivity extends Activity {
         centerButton = (Button) findViewById(R.id.chat_center_button);
 
         if(AppController.CheckIfFriend(user.getMail())) {
-            centerButton.setVisibility(View.GONE);
+            UserIsFriend();
         } else {
-
-            centerButton.setText("Add as Friend");
-            centerButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#339dff")));
-            centerButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    DataAccessObject dao = new DataAccessObject(getApplicationContext());
-                    dao.AddUserToFriends(user.getMail());
-                    centerButton.setVisibility(View.GONE);
-
-                }
-            });
-
+            UserIsNotFriend();
         }
 
         AppController.AddPrivateMessageListener(messageCallback);
@@ -333,6 +322,40 @@ public class ChatActivity extends Activity {
             Log.e(getClass().toString(), "Could not find the forum:" + intent.getLongExtra("forumId", -1));
             finish();
         }
+
+    }
+
+    void UserIsFriend() {
+
+        centerButton.setText("Remove Friend");
+        centerButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff032d")));
+        centerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                DataAccessObject dao = new DataAccessObject(getApplicationContext());
+                dao.RemoveUserFromFriends(user.getMail());
+                UserIsNotFriend();
+
+            }
+        });
+
+    }
+
+    void UserIsNotFriend() {
+
+        centerButton.setText("Add as Friend");
+        centerButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#339dff")));
+        centerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                DataAccessObject dao = new DataAccessObject(getApplicationContext());
+                dao.AddUserToFriends(user.getMail());
+                UserIsFriend();
+
+            }
+        });
 
     }
 

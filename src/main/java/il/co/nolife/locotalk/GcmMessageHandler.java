@@ -15,6 +15,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import il.co.nolife.locotalk.DataTypes.LocoForum;
 import il.co.nolife.locotalk.DataTypes.LocoUser;
 
 /**
@@ -112,7 +113,21 @@ public class GcmMessageHandler {
                     DataAccessObject dao = new DataAccessObject(context);
                     dao.WriteMessageToEvent(eventId, name, owner, loc, radius, actualMessage);
 
+                } else if(dataType.compareTo("removeForum") == 0) {
+
+                    long forumId = message.getLong("forumId");
+                    String owner = message.getString("owner");
+                    String toRemove = message.getString("user");
+
+                    LocoForum forum = new LocoForum();
+                    forum.setId(forumId);
+                    forum.setOwner(owner);
+
+                    DataAccessObject dao = new DataAccessObject(context);
+                    dao.RemoveUserFromForum(forum, toRemove);
+
                 }
+
             } catch(JSONException e) {
                 Log.e(TAG, "Could not parse GCM Message of type '" + dataType + "': " + e.getMessage() + ", original message: " + orig);
             }

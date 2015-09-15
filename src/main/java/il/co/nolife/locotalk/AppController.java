@@ -201,8 +201,11 @@ public class AppController {
 
     public static void GetImage(final String url, final IApiCallback<Bitmap> callback) {
 
+        Log.i(TAG, "Trying to get user image: " + url);
+
         if(instance.cachedImages.containsKey(url)) {
             if(callback != null) {
+                Log.i(TAG, "imediatly found image: " + url);
                 callback.Invoke(instance.cachedImages.get(url));
             }
         } else {
@@ -210,6 +213,7 @@ public class AppController {
             if(!instance.downloading) {
 
                 instance.downloading = true;
+                Log.i(TAG, "Trying to download image: " + url);
 
                 new AsyncTask<Void, Void, Void>() {
 
@@ -221,6 +225,7 @@ public class AppController {
                             URL urlStream = new URL(url);
                             Bitmap image = BitmapFactory.decodeStream(urlStream.openStream());
                             instance.cachedImages.put(url, image);
+                            Log.i(TAG, "Image downloaded: " + url);
                             if(callback != null) {
                                 callback.Invoke(image);
                             }
@@ -233,6 +238,7 @@ public class AppController {
 
                         if(instance.pendingDownloads.size() > 0) {
 
+                            Log.i(TAG, "Calling the next download: " + url);
                             IApiCallback<Void> nextDownload = instance.pendingDownloads.get(0);
                             instance.pendingDownloads.remove(0);
                             nextDownload.Invoke(null);
@@ -240,6 +246,7 @@ public class AppController {
                         }
 
                         return null;
+
                     }
 
                 }.execute();

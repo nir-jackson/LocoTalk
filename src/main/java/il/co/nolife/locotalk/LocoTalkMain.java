@@ -330,33 +330,47 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     void MarkerClicked(Marker marker){
 
         LocoUser user = currentUserMap.get(marker);
-        if(user != null){
+        if(user != null) {
+
             Intent chatIntent = new Intent(this, ChatActivity.class);
             chatIntent.putExtra("type", EChatType.PRIVATE.ordinal());
             chatIntent.putExtra("from", user.getMail());
             startActivity(chatIntent);
+
         } else {
 
-            LocoEvent event = eventMarkerMap.get(marker);
-            if(event != null) {
+            user = friendsMarkersMap.get(marker);
+            if(user != null) {
 
                 Intent chatIntent = new Intent(this, ChatActivity.class);
-                chatIntent.putExtra("type", EChatType.EVENT.ordinal());
-                chatIntent.putExtra("eventId", event.getId());
+                chatIntent.putExtra("type", EChatType.PRIVATE.ordinal());
+                chatIntent.putExtra("from", user.getMail());
                 startActivity(chatIntent);
 
             } else {
 
-                LocoForum forum = forumMarkerMap.get(marker);
-                if(forum != null) {
+                LocoEvent event = eventMarkerMap.get(marker);
+                if (event != null) {
 
                     Intent chatIntent = new Intent(this, ChatActivity.class);
-                    chatIntent.putExtra("type", EChatType.FORUM.ordinal());
-                    chatIntent.putExtra("forumId", forum.getId());
+                    chatIntent.putExtra("type", EChatType.EVENT.ordinal());
+                    chatIntent.putExtra("eventId", event.getId());
                     startActivity(chatIntent);
 
                 } else {
-                    Log.e(TAG, "Could not find marker in the current maps");
+
+                    LocoForum forum = forumMarkerMap.get(marker);
+                    if (forum != null) {
+
+                        Intent chatIntent = new Intent(this, ChatActivity.class);
+                        chatIntent.putExtra("type", EChatType.FORUM.ordinal());
+                        chatIntent.putExtra("forumId", forum.getId());
+                        startActivity(chatIntent);
+
+                    } else {
+                        Log.e(TAG, "Could not find marker in the current maps");
+                    }
+
                 }
 
             }
@@ -647,8 +661,8 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                                         m.remove();
                                     }
 
-                                    currentUserMap = new HashMap<Marker, LocoUser>();
-                                    reverseMarkersMap = new HashMap<String, Marker>();
+                                    currentUserMap = new HashMap<>();
+                                    reverseMarkersMap = new HashMap<>();
 
                                     List<LocoUser> usersAroundMe = AppController.GetKnownUsersAround(myLoc, myRange);
                                     inUserDrawingPhase = true;
@@ -717,8 +731,8 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                 if (result != null) {
 
                     List<UserAroundMe> fResult = result;
-                    List<LocoUser> users = new ArrayList<LocoUser>();
-                    List<LocoUser> newUsers = new ArrayList<LocoUser>();
+                    List<LocoUser> users = new ArrayList<>();
+                    List<LocoUser> newUsers = new ArrayList<>();
 
                     for (UserAroundMe u : fResult) {
                         if (u.getMail().compareTo(AppController.GetMyUser().getMail()) != 0) {
