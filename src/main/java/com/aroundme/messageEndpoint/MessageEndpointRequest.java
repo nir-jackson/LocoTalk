@@ -123,17 +123,17 @@ public abstract class MessageEndpointRequest<T> extends com.google.api.client.go
 
   /** Returns response with indentations and line breaks. */
   @com.google.api.client.util.Key
-  private java.lang.boolean prettyPrint;
+  private java.lang.Boolean prettyPrint;
 
   /**
    * Returns response with indentations and line breaks. [default: true]
    */
-  public java.lang.boolean getPrettyPrint() {
+  public java.lang.Boolean getPrettyPrint() {
     return prettyPrint;
   }
 
   /** Returns response with indentations and line breaks. */
-  public MessageEndpointRequest<T> setPrettyPrint(java.lang.boolean prettyPrint) {
+  public MessageEndpointRequest<T> setPrettyPrint(java.lang.Boolean prettyPrint) {
     this.prettyPrint = prettyPrint;
     return this;
   }

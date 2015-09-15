@@ -41,7 +41,7 @@ public final class Key extends com.google.api.client.json.GenericJson {
    * The value may be {@code null}.
    */
   @com.google.api.client.util.Key
-  private java.lang.boolean complete;
+  private java.lang.Boolean complete;
 
   /**
    * The value may be {@code null}.
@@ -91,14 +91,14 @@ public final class Key extends com.google.api.client.json.GenericJson {
   /**
    * @return value or {@code null} for none
    */
-  public java.lang.boolean getComplete() {
+  public java.lang.Boolean getComplete() {
     return complete;
   }
 
   /**
    * @param complete complete or {@code null} for none
    */
-  public Key setComplete(java.lang.boolean complete) {
+  public Key setComplete(java.lang.Boolean complete) {
     this.complete = complete;
     return this;
   }
