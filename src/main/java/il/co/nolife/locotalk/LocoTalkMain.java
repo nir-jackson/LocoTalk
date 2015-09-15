@@ -615,8 +615,9 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                                 @Override
                                 public void run() {
 
-                                    if (myMarker == null) {
-                                        if (mMap != null) {
+                                    if (mMap != null) {
+
+                                        if (myMarker == null) {
 
                                             myMarker = mMap.addMarker(new MarkerOptions()
                                                     .title(AppController.GetMyUser().getName())
@@ -624,7 +625,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                                                     .icon(myMarkerIcon));
 
 
-                                            if(mMap.getCameraPosition().zoom < 5) {
+                                            if (mMap.getCameraPosition().zoom < 5) {
 
                                                 cameraPosition = new CameraPosition.Builder()
                                                         .target(myMarker.getPosition())
@@ -639,55 +640,59 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
                                             positionRetrieved = true;
 
-                                        }
-                                    } else {
-                                        myMarker.setPosition(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()));
-                                    }
 
-                                    if(myMarker != null) {
-                                        if(myRangeCircle == null) {
-                                            myRangeCircle = mMap.addCircle(new CircleOptions()
-                                                    .strokeColor(myCircleColor)
-                                                    .strokeWidth(3)
-                                                    .radius(myRange)
-                                                    .center(myMarker.getPosition()));
                                         } else {
-                                            myRangeCircle.setCenter(myMarker.getPosition());
-                                            myRangeCircle.setRadius(myRange);
+                                            myMarker.setPosition(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()));
                                         }
-                                    }
 
-                                    for (Marker m : currentUserMap.keySet()) {
-                                        m.remove();
-                                    }
-
-                                    currentUserMap = new HashMap<>();
-                                    reverseMarkersMap = new HashMap<>();
-
-                                    List<LocoUser> usersAroundMe = AppController.GetKnownUsersAround(myLoc, myRange);
-                                    inUserDrawingPhase = true;
-
-                                    for (LocoUser user : usersAroundMe) {
-
-                                        if(!AppController.CheckIfFriend(user.getMail())) {
-
-                                            MarkerOptions options = new MarkerOptions()
-                                                    .position(new LatLng(user.getLocation().getLatitude(), user.getLocation().getLongitude()))
-                                                    .title(user.getName());
-
-                                            if (AppController.CheckIfSafe(user.getMail())) {
-                                                options.icon(safePersonMarkerIcon);
+                                        if (myMarker != null) {
+                                            if (myRangeCircle == null) {
+                                                myRangeCircle = mMap.addCircle(new CircleOptions()
+                                                        .strokeColor(myCircleColor)
+                                                        .strokeWidth(3)
+                                                        .radius(myRange)
+                                                        .center(myMarker.getPosition()));
                                             } else {
-                                                options.icon(personMarkerIcon);
+                                                myRangeCircle.setCenter(myMarker.getPosition());
+                                                myRangeCircle.setRadius(myRange);
+                                            }
+                                        }
+
+                                        for (Marker m : currentUserMap.keySet()) {
+                                            m.remove();
+                                        }
+
+                                        currentUserMap = new HashMap<>();
+                                        reverseMarkersMap = new HashMap<>();
+
+                                        List<LocoUser> usersAroundMe = AppController.GetKnownUsersAround(myLoc, myRange);
+                                        inUserDrawingPhase = true;
+
+                                        for (LocoUser user : usersAroundMe) {
+
+                                            if (!AppController.CheckIfFriend(user.getMail())) {
+
+                                                MarkerOptions options = new MarkerOptions()
+                                                        .position(new LatLng(user.getLocation().getLatitude(), user.getLocation().getLongitude()))
+                                                        .title(user.getName());
+
+                                                if (AppController.CheckIfSafe(user.getMail())) {
+                                                    options.icon(safePersonMarkerIcon);
+                                                } else {
+                                                    options.icon(personMarkerIcon);
+                                                }
+
+                                                Marker marker = mMap.addMarker(options);
+                                                currentUserMap.put(marker, user);
+                                                reverseMarkersMap.put(user.getMail(), marker);
+
                                             }
 
-                                            Marker marker = mMap.addMarker(options);
-                                            currentUserMap.put(marker, user);
-                                            reverseMarkersMap.put(user.getMail(), marker);
 
                                         }
 
-
+                                    } else {
+                                        sleepTime = 1000;
                                     }
 
                                 }
