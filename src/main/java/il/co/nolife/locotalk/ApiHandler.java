@@ -53,6 +53,7 @@ public class ApiHandler {
 
     ApiHandler() {
 
+        EndpointApiCreator.initialize(null);
         delayedCalls = new ArrayList<IApiCallback<Void>>();
         initialized = false;
 
