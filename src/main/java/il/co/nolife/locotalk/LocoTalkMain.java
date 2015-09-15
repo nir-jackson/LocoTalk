@@ -115,6 +115,8 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
         eventCircleColor = Color.parseColor("#9c39f1");
 
         final TextView rangeText = (TextView) findViewById(R.id.main_picker_text);
+        rangeText.setText(Integer.toString(myRange / 1000) + " Km");
+
         SeekBar rangePicker = (SeekBar) findViewById(R.id.main_range_picker);
         rangePicker.setMax(MAX_RANGE);
         rangePicker.setProgress(myRange);
@@ -350,6 +352,14 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
         } else {
 
             user = friendsMarkersMap.get(marker);
+
+            String s = "";
+            for (Marker m: friendsMarkersMap.keySet()) {
+                s += m.getTitle() + ":" + m + ", ";
+            }
+
+            Log.i("CHECK", s + ". Clicked marker: " + marker);
+
             if(user != null) {
 
                 Intent chatIntent = new Intent(this, ChatActivity.class);
@@ -554,7 +564,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     void RefreshFriendsMarkers() {
 
         Collection<LocoUser> friends = AppController.GetFriends().values();
-        for(Marker marker : forumMarkerMap.keySet()) {
+        for(Marker marker : friendsMarkersMap.keySet()) {
             marker.remove();
         }
 
@@ -673,6 +683,8 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                                         for (LocoUser user : usersAroundMe) {
 
                                             if (!AppController.CheckIfFriend(user.getMail())) {
+
+                                                Log.i("MARKERCHECK", "Creating marker for " + user.getMail());
 
                                                 MarkerOptions options = new MarkerOptions()
                                                         .position(new LatLng(user.getLocation().getLatitude(), user.getLocation().getLongitude()))
