@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.AsyncTask;
 import android.util.Log;
 
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.GeoPt;
@@ -29,7 +28,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
     public static final String TAG = "DataAccessObject";
 
-    public static final int DATABASE_VERSION = 6;
+    public static final int DATABASE_VERSION = 10;
     public static final String DATABASE_NAME = "areaChat";
 
     public static final String CONVERSATION_TABLE = "conversations";
@@ -57,9 +56,10 @@ public class DataAccessObject extends SQLiteOpenHelper {
     public static final String EVENTS_TABLE = "events";
     public static final String E_KEY = "eventId";
 
-    public static final String FRIENDS_TABLE = "friends";
+    public static final String USERS_TABLE = "users";
     public static final String U_MAIL = "mail";
     public static final String U_SAFE = "safe";
+    public static final String U_FRIEND = "friend";
 
     public static final String EVENT_COLLISIONS_TABLE = "eventCollisions";
     public static final String FORUM_COLLISIONS_TABLE = "forumCollisions";
@@ -127,12 +127,13 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         db.execSQL(createEvents);
 
-        String createFriends = "CREATE TABLE " + FRIENDS_TABLE + " ("
+        String createFriends = "CREATE TABLE " + USERS_TABLE + " ("
                 + U_MAIL + " TEXT, "
                 + NAME + " TEXT, "
                 + LOC_LAT + " REAL, "
                 + LOC_LON + " REAL, "
-                + U_SAFE + " INTEGER)";
+                + U_SAFE + " INTEGER, "
+                + U_FRIEND + " INTEGER)";
 
         db.execSQL(createFriends);
 
@@ -161,7 +162,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + FORUMS_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + FORUM_USERS_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + EVENTS_TABLE);
-        db.execSQL("DROP TABLE IF EXISTS " + FRIENDS_TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + USERS_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + FORUM_COLLISIONS_TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + EVENT_COLLISIONS_TABLE);
 
@@ -217,7 +218,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        Cursor conversation = db.rawQuery("SELECT * FROM " + DIRECT_CONVERSATIONS_TABLE + " WHERE " + M_FROM + "='" + ((myMessage)?(message.getTo()):(message.getFrom())) + "'", null);
+        Cursor conversation = db.rawQuery("SELECT * FROM " + DIRECT_CONVERSATIONS_TABLE + " WHERE " + M_FROM + "='" + ((myMessage) ? (message.getTo()) : (message.getFrom())) + "'", null);
 
         if(conversation.moveToFirst()) {
 
@@ -586,11 +587,11 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
     }
 
-    public void AddFriend(LocoUser user) {
+    public void AddUser(LocoUser user) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT * FROM " + FRIENDS_TABLE + " WHERE " + U_MAIL + "='" + user.getMail() + "'", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + USERS_TABLE + " WHERE " + U_MAIL + "='" + user.getMail() + "'", null);
 
         if(cursor.getCount() > 0) {
             Log.e(getClass().toString(), "Trying to insert a user with the same mail");
@@ -601,10 +602,10 @@ public class DataAccessObject extends SQLiteOpenHelper {
             values.put(NAME, user.getName());
             values.put(LOC_LAT, user.getLocation().getLatitude());
             values.put(LOC_LON, user.getLocation().getLongitude());
-            values.put(U_SAFE, 0);
+            values.put(U_SAFE, user.getSafe());
+            values.put(U_FRIEND, user.getFriend());
 
-            db.insert(FRIENDS_TABLE, null, values);
-            AppController.NewFriend(user.getMail());
+            db.insert(USERS_TABLE, null, values);
 
         }
 
@@ -612,39 +613,99 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
     }
 
-    public void ValidateFriend(String mail) {
+    public void AddUsers(Collection<LocoUser> users) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        for (LocoUser user : users) {
+
+            ContentValues values = new ContentValues();
+            values.put(U_MAIL, user.getMail());
+            values.put(NAME, user.getName());
+            values.put(LOC_LAT, user.getLocation().getLatitude());
+            values.put(LOC_LON, user.getLocation().getLongitude());
+            values.put(U_SAFE, user.getSafe());
+            values.put(U_FRIEND, user.getFriend());
+
+            db.insert(USERS_TABLE, null, values);
+
+        }
+
+    }
+
+    public void ValidateUser(String mail) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(U_SAFE, 1);
 
-        db.update(FRIENDS_TABLE, values, U_MAIL + "='" + mail +"'", null);
+        db.update(USERS_TABLE, values, U_MAIL + "='" + mail + "'", null);
+        Log.i(getClass().toString(), "Validating user:" + mail);
 
     }
 
-    public void UpdateFriendsLocation(final Collection<LocoUser> friends) {
+    public void AddUserToFriends(String mail) {
 
-        final SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = this.getWritableDatabase();
 
-        new AsyncTask<Void, Void, Void>() {
+        ContentValues values = new ContentValues();
+        values.put(U_FRIEND, 1);
 
-            @Override
-            protected Void doInBackground(Void... params) {
+        db.update(USERS_TABLE, values, U_MAIL + "='" + mail + "'", null);
 
-                for (LocoUser u : friends) {
+    }
 
-                    ContentValues values = new ContentValues();
-                    values.put(LOC_LAT, u.getLocation().getLatitude());
-                    values.put(LOC_LON, u.getLocation().getLongitude());
+    public void RemoveUserFromFriends(String mail) {
 
-                    db.update(FRIENDS_TABLE, values, U_MAIL + "='" + u.getMail() + "'", null);
+        SQLiteDatabase db = this.getWritableDatabase();
 
+        ContentValues values = new ContentValues();
+        values.put(U_FRIEND, 0);
+
+        db.update(USERS_TABLE, values, U_MAIL + "='" + mail + "'", null);
+
+    }
+
+    public List<LocoUser> GetAllUsers() {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM " + USERS_TABLE, null);
+
+        List<LocoUser> retVal = new ArrayList<>();
+
+        if(cursor.moveToFirst()) {
+
+            do {
+
+                DatabaseUtils.dumpCurrentRow(cursor);
+
+                LocoUser user = new LocoUser();
+                GeoPt loc = new GeoPt();
+                loc.setLatitude(cursor.getFloat(cursor.getColumnIndex(LOC_LAT)));
+                loc.setLongitude(cursor.getFloat(cursor.getColumnIndex(LOC_LON)));
+                user.setLocation(loc);
+                user.setMail(cursor.getString(cursor.getColumnIndex(U_MAIL)));
+                user.setName(cursor.getString(cursor.getColumnIndex(NAME)));
+                int friend = cursor.getInt(cursor.getColumnIndex(U_FRIEND));
+                if(friend == 1) {
+                    user.setFriend(true);
+                }
+                int safe = cursor.getInt(cursor.getColumnIndex(U_SAFE));
+                if(safe == 1) {
+                    user.setSafe(true);
                 }
 
-                return null;
-            }
-        }.execute();
+                retVal.add(user);
+
+            } while(cursor.moveToNext());
+
+        }
+
+        cursor.close();
+
+        return retVal;
 
     }
 
@@ -682,11 +743,48 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
     }
 
+    public List<LocoUser> GetAllSafeUsers() {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM " + USERS_TABLE + " WHERE " + U_SAFE + "=1", null);
+
+        List<LocoUser> retVal = new ArrayList<LocoUser>();
+
+        if(cursor.moveToFirst()) {
+
+            do {
+
+                LocoUser u = new LocoUser();
+                GeoPt loc = new GeoPt();
+                loc.setLatitude(cursor.getFloat(cursor.getColumnIndex(LOC_LAT)));
+                loc.setLongitude(cursor.getFloat(cursor.getColumnIndex(LOC_LON)));
+                u.setLocation(loc);
+                u.setMail(cursor.getString(cursor.getColumnIndex(U_MAIL)));
+                u.setName(cursor.getString(cursor.getColumnIndex(NAME)));
+                int friend = cursor.getInt(cursor.getColumnIndex(U_FRIEND));
+                if(friend == 1) {
+                    u.setFriend(true);
+                }
+                u.setSafe(true);
+
+                retVal.add(u);
+
+            } while(cursor.moveToNext());
+
+        }
+
+        cursor.close();
+
+        return retVal;
+
+    }
+
     public List<LocoUser> GetAllFriends() {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT * FROM " + FRIENDS_TABLE, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + USERS_TABLE + " WHERE " + U_FRIEND + "=1", null);
 
         List<LocoUser> retVal = new ArrayList<LocoUser>();
 
@@ -705,40 +803,11 @@ public class DataAccessObject extends SQLiteOpenHelper {
                 if(safe != 0) {
                     u.setSafe(true);
                 }
+                u.setFriend(true);
 
                 retVal.add(u);
 
             } while(cursor.moveToNext());
-
-        }
-
-        cursor.close();
-
-        return retVal;
-
-    }
-
-    public LocoUser GetFriend(String mail) {
-
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        Cursor cursor = db.rawQuery("SELECT * FROM " + FRIENDS_TABLE, null);
-
-        LocoUser retVal = null;
-
-        if(cursor.moveToFirst()) {
-
-            retVal = new LocoUser();
-            GeoPt loc = new GeoPt();
-            loc.setLatitude(cursor.getFloat(cursor.getColumnIndex(LOC_LAT)));
-            loc.setLongitude(cursor.getFloat(cursor.getColumnIndex(LOC_LON)));
-            retVal.setLocation(loc);
-            retVal.setMail(cursor.getString(cursor.getColumnIndex(U_MAIL)));
-            retVal.setName(cursor.getString(cursor.getColumnIndex(NAME)));
-            int safe = cursor.getInt(cursor.getColumnIndex(U_SAFE));
-            if(safe != 0) {
-                retVal.setSafe(true);
-            }
 
         }
 
@@ -947,6 +1016,23 @@ public class DataAccessObject extends SQLiteOpenHelper {
         db.update(EVENTS_TABLE, values, E_KEY + "=" + event.getId(), null);
 
         AppController.EventsChanged(event.getId());
+
+    }
+
+    public void UpdateUsersLocation(Collection<LocoUser> users) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        for (LocoUser user : users) {
+
+            ContentValues values = new ContentValues();
+
+            values.put(LOC_LAT, user.getLocation().getLatitude());
+            values.put(LOC_LON, user.getLocation().getLongitude());
+
+            db.update(USERS_TABLE, values, U_MAIL + "='" + user.getMail() + "'", null);
+
+        }
 
     }
 

@@ -7,10 +7,17 @@
         android:layout_height="match_parent" android:id="@+id/map" tools:context=".LocoTalkMain"
         android:name="com.google.android.gms.maps.SupportMapFragment" />
 
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:padding="20dp"
+        android:id="@+id/main_range_picker"/>
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/splash">
+        android:id="@+id/main_splash"
+        android:visibility="gone">
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"

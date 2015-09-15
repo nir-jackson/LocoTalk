@@ -36,6 +36,8 @@ public class GcmMessageHandler {
 
                     String mail = message.getString("mail");
                     Log.i(TAG, "Dude pinged !:" + mail);
+                    DataAccessObject dao = new DataAccessObject(context);
+                    dao.ValidateUser(mail);
                     User myUser = ApiHandler.GetUser();
                     if (myUser != null) {
                         String m = "{ 'type':'pong', 'mail':'" + myUser.getMail() + "' }";
@@ -48,7 +50,7 @@ public class GcmMessageHandler {
                     String mail = message.getString("mail");
                     Log.i(TAG, "Dude ponged !:" + mail);
                     DataAccessObject dao = new DataAccessObject(context);
-                    dao.ValidateFriend(mail);
+                    dao.ValidateUser(mail);
                     AppController.UserPonged(mail);
 
                 } else if (dataType.compareTo("newForum") == 0) {

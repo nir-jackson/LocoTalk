@@ -117,7 +117,7 @@ public class ChatActivity extends Activity {
     void PrivateChat() {
 
         String mail = intent.getStringExtra("from");
-        final LocoUser user = AppController.GetUserFromCache(mail);
+        final LocoUser user = AppController.GetUser(mail);
         Log.i(getClass().toString(), user.toString());
         String tempurl = user.getIcon().replace("sz=50", "sz=150");
 
@@ -188,7 +188,7 @@ public class ChatActivity extends Activity {
                 public void onClick(View v) {
 
                     DataAccessObject dao = new DataAccessObject(getApplicationContext());
-                    dao.AddFriend(user);
+                    dao.AddUserToFriends(user.getMail());
                     centerButton.setVisibility(View.GONE);
 
                 }

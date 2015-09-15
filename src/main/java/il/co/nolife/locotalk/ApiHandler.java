@@ -292,15 +292,15 @@ public class ApiHandler {
 
     }
 
-    public static void GetUsersAroundMe(final LocoUser user, final int radius, final IApiCallback<List<UserAroundMe>> onEnd) {
+    public static void GetUsersAroundMe(final GeoPt point, final int radius, final String mail, final IApiCallback<List<UserAroundMe>> onEnd) {
 
         if(instance.initialized) {
-            instance.GetUsersAroundMeAsync(user, radius, onEnd);
+            instance.GetUsersAroundMeAsync(point, radius, mail, onEnd);
         } else {
             instance.delayedCalls.add(new IApiCallback<Void>() {
                 @Override
                 public void Invoke(Void result) {
-                    GetUsersAroundMe(user, radius, onEnd);
+                    GetUsersAroundMe(point, radius, mail, onEnd);
                 }
             });
         }
@@ -697,7 +697,7 @@ public class ApiHandler {
 
     }
 
-    void GetUsersAroundMeAsync(final LocoUser me, final int radius, final IApiCallback<List<UserAroundMe>> onEnd) {
+    void GetUsersAroundMeAsync(final GeoPt point, final int radius, final String mail, final IApiCallback<List<UserAroundMe>> onEnd) {
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -705,7 +705,7 @@ public class ApiHandler {
             protected Void doInBackground(Void... params) {
 
                 try {
-                    List<UserAroundMe> retVal = api.getUsersAroundMe(me.getLocation().getLongitude(), me.getLocation().getLatitude(), radius, me.getMail()).execute().getItems();
+                    List<UserAroundMe> retVal = api.getUsersAroundMe(point.getLatitude(), point.getLongitude(), radius, mail).execute().getItems();
                     if(onEnd != null) {
                         onEnd.Invoke(retVal);
                     }

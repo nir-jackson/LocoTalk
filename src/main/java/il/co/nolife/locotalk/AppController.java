@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.appspot.enhanced_cable_88320.aroundmeapi.model.GeoPt;
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.Message;
 
 import java.io.IOException;
@@ -22,6 +23,40 @@ import il.co.nolife.locotalk.DataTypes.LocoUser;
 public class AppController {
 
     public static final String TAG = "AppController";
+
+    class RangeHelper {
+
+        public static final double PI = 3.1415926535897932385;
+        public static final double EARTH_RADIUs = 6371000;
+
+        double radius;
+        GeoPt point;
+
+        public RangeHelper(GeoPt loc, double radius) {
+            this.radius = radius;
+            point = loc;
+        }
+
+        Boolean checkIfInRange(GeoPt point) {
+            return DistFrom(point) <= radius;
+        }
+
+        double DistFrom(GeoPt pt2) {
+
+            double earthRadius = 6371000; //meters
+            double dLat = Math.toRadians(pt2.getLatitude() - point.getLatitude());
+            double dLng = Math.toRadians(pt2.getLongitude() - point.getLongitude());
+            double a = (Math.sin(dLat/2) * Math.sin(dLat/2)) +
+                    Math.cos(Math.toRadians(point.getLatitude())) * Math.cos(Math.toRadians(pt2.getLatitude())) *
+                            Math.sin(dLng/2) * Math.sin(dLng/2);
+            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            double dist = (earthRadius * c);
+
+            return dist;
+
+        }
+
+    }
 
     static {
 
@@ -50,12 +85,11 @@ public class AppController {
         newForumMsgListeners = new ArrayList<IApiCallback<Long>>();
         eventsChangedListeners = new ArrayList<IApiCallback<Long>>();
         newEventMsgListeners = new ArrayList<IApiCallback<Long>>();
-        newFriendListeners = new ArrayList<IApiCallback<String>>();
         userPongedListener = new ArrayList<IApiCallback<String>>();
         cachedImages = new HashMap<String, Bitmap>();
         downloading = false;
         pendingDownloads = new ArrayList<IApiCallback<Void>>();
-        userCache = new HashMap<String, LocoUser>();
+        allUsers = new HashMap<String, LocoUser>();
         myUser = new LocoUser();
         friends = new HashMap<>();
 
@@ -66,17 +100,20 @@ public class AppController {
     List<IApiCallback<Long>> newForumMsgListeners;
     List<IApiCallback<Long>> eventsChangedListeners;
     List<IApiCallback<Long>> newEventMsgListeners;
-    List<IApiCallback<String>> newFriendListeners;
     List<IApiCallback<String>> userPongedListener;
 
     HashMap<String, Bitmap> cachedImages;
     Boolean downloading;
     List<IApiCallback<Void>> pendingDownloads;
 
-    HashMap<String, LocoUser> userCache;
+    HashMap<String, LocoUser> allUsers;
     HashMap<String, LocoUser> friends;
 
     LocoUser myUser;
+
+    RangeHelper GetRangeHelper(GeoPt loc, int range) {
+        return new RangeHelper(loc, range);
+    }
 
     public static void NewPrivateMessage(Message message) {
         for (IApiCallback<Message> c : instance.newMessageListeners) {
@@ -108,12 +145,6 @@ public class AppController {
         }
     }
 
-    public static void NewFriend(String user) {
-        for (IApiCallback<String> c : instance.newFriendListeners) {
-            c.Invoke(user);
-        }
-    }
-
     public static void UserPonged(String user) {
         for(IApiCallback<String> c : instance.userPongedListener) {
             c.Invoke(user);
@@ -130,10 +161,6 @@ public class AppController {
 
     public static void AddNewForumMessageListener(IApiCallback<Long> listener) {
         instance.newForumMsgListeners.add(listener);
-    }
-
-    public static void AddNewFriendListener(IApiCallback<String> listener) {
-        instance.newFriendListeners.add(listener);
     }
 
     public static void AddUserPongedListener(IApiCallback<String> listener) {
@@ -166,10 +193,6 @@ public class AppController {
 
     public static void RemoveNewEventMessageListener(IApiCallback<Long> listener) {
         instance.newEventMsgListeners.remove(listener);
-    }
-
-    public static void RemoveNewFriendListener(IApiCallback<String> listener) {
-        instance.newFriendListeners.remove(listener);
     }
 
     public static void RemoveUserPongedListener(IApiCallback<String> listener) {
@@ -234,32 +257,8 @@ public class AppController {
 
     }
 
-    public static void AddUserToCache(LocoUser user) {
-
-        if(!instance.userCache.containsKey(user.getMail())) {
-
-            instance.userCache.put(user.getMail(), user);
-            GetImage(user.getIcon(), null);
-            ApiHandler.Ping(user.getMail());
-
-        }
-
-    }
-
-    public static void AddUsersToCache(Collection<LocoUser> users) {
-
-        for (LocoUser u : users) {
-            if(!instance.userCache.containsKey(u.getMail())) {
-                instance.userCache.put(u.getMail(), u);
-                GetImage(u.getIcon(), null);
-                ApiHandler.Ping(u.getMail());
-            }
-        }
-
-    }
-
-    public static LocoUser GetUserFromCache(String mail) {
-        LocoUser retVal = instance.userCache.get(mail);
+    public static LocoUser GetUser(String mail) {
+        LocoUser retVal = instance.allUsers.get(mail);
         if(retVal != null) {
             return retVal;
         } else {
@@ -267,11 +266,24 @@ public class AppController {
         }
     }
 
+    public static void SetUsers(List<LocoUser> users) {
+
+        instance.allUsers = new HashMap<>();
+        instance.friends = new HashMap<>();
+        for (LocoUser u : users) {
+            instance.allUsers.put(u.getMail(), u);
+            if(u.getFriend()) {
+                instance.friends.put(u.getMail(), u);
+            }
+        }
+
+    }
+
     public static LocoUser GetMyUser() {
         return instance.myUser;
     }
 
-    public static void SetMyUser(LocoUser user) {
+    public static synchronized void SetMyUser(LocoUser user) {
         instance.myUser = user;
     }
 
@@ -305,32 +317,49 @@ public class AppController {
         } else {
             return false;
         }
+
     }
 
-    public static void SetFriends(Collection<LocoUser> friends) {
+    public static Boolean CheckKnownUser(String mail) {
+        return instance.allUsers.containsKey(mail);
+    }
 
-        instance.friends = new HashMap<>();
-        for (LocoUser f : friends) {
-            instance.friends.put(f.getMail(), f);
+    public static Boolean CheckIfSafe(String mail) {
+
+        LocoUser user = instance.allUsers.get(mail);
+        if(user != null) {
+            return user.getSafe();
+        } else {
+            return false;
         }
 
     }
 
-    public static void UpdateFriendsLocation(Collection<LocoUser> users, DataAccessObject dao) {
+    public static synchronized List<LocoUser> GetKnownUsersAround(GeoPt location, int range) {
 
-        Boolean updated = false;
-        for (LocoUser u : users) {
+        List<LocoUser> retVal = new ArrayList<>();
+        RangeHelper rh = instance.GetRangeHelper(location, range);
 
-            LocoUser friend = instance.friends.get(u.getMail());
-            if(friend != null) {
-                friend.setLocation(u.getLocation());
-                updated = true;
+        for (LocoUser user : instance.allUsers.values()) {
+            if(rh.checkIfInRange(user.getLocation())) {
+                retVal.add(user);
+            }
+        }
+
+        return retVal;
+
+    }
+
+    public static synchronized void UpdateUsersLocation(Collection<LocoUser> users, DataAccessObject dao) {
+
+        dao.UpdateUsersLocation(users);
+        for (LocoUser user : users) {
+
+            LocoUser u = instance.allUsers.get(user.getMail());
+            if(u != null) {
+                u.setLocation(user.getLocation());
             }
 
-        }
-
-        if(updated) {
-            dao.UpdateFriendsLocation(instance.friends.values());
         }
 
     }

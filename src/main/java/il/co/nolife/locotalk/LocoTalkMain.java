@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.widget.SeekBar;
 
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.GeoPt;
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.UserAroundMe;
@@ -33,9 +34,9 @@ import com.google.android.gms.plus.Plus;
 import com.google.android.gms.plus.model.people.Person;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import il.co.nolife.locotalk.DataTypes.EChatType;
 import il.co.nolife.locotalk.DataTypes.LocoEvent;
@@ -46,24 +47,32 @@ import il.co.nolife.locotalk.ViewClasses.SimpleDialog;
 // import com.google.android.gms.location.LocationListener;
 
 
-public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, IMarkerLocoUserGetter, SimpleDialog.DialogClickListener {
+public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, SimpleDialog.DialogClickListener {
 
     private static final String TAG = "LocoTalkMain";
     private static final int RC_SIGN_IN = 0;
+    public static final int MAX_RANGE = 100000;
     private boolean mIntentInProgress;
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private GoogleApiClient mGoogleApiClient;
 
-    HashMap<Marker, LocoUser> currentUserMarkers;
+    HashMap<Marker, LocoUser> currentUserMap;
     HashMap<String, Marker> reverseMarkersMap;
+    HashMap<Marker, LocoUser> friendsMarkersMap;
+    HashMap<String, Marker> reverseFriendsMap;
     HashMap<Marker, LocoForum> forumMarkerMap;
     HashMap<Marker, LocoEvent> eventMarkerMap;
+
     Marker myMarker;
+    Circle myRangeCircle;
+    int myRange = 20000;
+    int myCircleColor;
 
     Marker selectedMarker;
     Circle eventRadius;
     CameraPosition cameraPosition;
+    int eventCircleColor;
 
     BitmapDescriptor personMarkerIcon;
     BitmapDescriptor safePersonMarkerIcon;
@@ -75,12 +84,14 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
     Thread workerThread;
     Boolean pause = false;
+    Boolean skipSleep = false;
     Boolean positionRetrieved = false;
     Boolean waitingForLocationServices = false;
+    Boolean inUserDrawingPhase = false;
+    int sleepTime;
 
     DataAccessObject dao;
 
-    IApiCallback<String> newFriendListener;
     IApiCallback<String> userPongedListener;
     IApiCallback<Long> newForumListener;
     IApiCallback<Long> newEventListener;
@@ -93,14 +104,46 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
         super.onCreate(savedInstanceState);
         Log.i(TAG, "it has to work!");
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
         pause = false;
         EndpointApiCreator.initialize(null);
         setContentView(R.layout.map_activity);
         ApiHandler.Initialize(this);
         dao = new DataAccessObject(this);
+        myCircleColor = Color.parseColor("#5555ff");
+        eventCircleColor = Color.parseColor("#9c39f1");
+
+        SeekBar rangePicker = (SeekBar) findViewById(R.id.main_range_picker);
+        rangePicker.setMax(MAX_RANGE);
+        rangePicker.setProgress(myRange);
+        rangePicker.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    myRange = progress;
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                if (workerThread != null) {
+                    workerThread.interrupt();
+                    skipSleep = true;
+                }
+            }
+        });
 
         eventMarkerMap = new HashMap<>();
         forumMarkerMap = new HashMap<>();
+        currentUserMap = new HashMap<>();
+        reverseMarkersMap = new HashMap<>();
+        friendsMarkersMap = new HashMap<>();
+        reverseFriendsMap = new HashMap<>();
 
         personMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person));
         safePersonMarkerIcon = BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.person_blue));
@@ -112,31 +155,20 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
         waitingForMap = new ArrayList<>();
 
-        newFriendListener = new IApiCallback<String>() {
-            @Override
-            public void Invoke(String result) {
-
-                AppController.SetFriends(dao.GetAllFriends());
-                Marker m = reverseMarkersMap.get(result);
-                if(m != null){
-                    m.setIcon(friendMarkerIcon);
-                }
-
-            }
-        };
-
         userPongedListener = new IApiCallback<String>() {
             @Override
             public void Invoke(String result) {
 
-                Marker m = reverseMarkersMap.get(result);
-                if (m != null) {
-                    if(AppController.CheckIfFriend(result)) {
-                        m.setIcon(safeFriendMarkerIcon);
-                    } else {
-                        m.setIcon(safePersonMarkerIcon);
+                AppController.SetUsers(dao.GetAllUsers());
+
+                if(workerThread != null) {
+                    if(inUserDrawingPhase) {
+                        skipSleep = true;
                     }
+                    workerThread.interrupt();
                 }
+
+                Log.i(TAG, "User ponged");
 
             }
         };
@@ -148,37 +180,32 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     protected void onStart() {
         super.onStart();
 
-        AppController.SetFriends(dao.GetAllFriends());
-        AppController.AddNewFriendListener(newFriendListener);
+        AppController.SetUsers(dao.GetAllUsers());
+
         AppController.AddUserPongedListener(userPongedListener);
         mGoogleApiClient.connect();
         LocationServiceEnabled();
+
+        if(mMap != null) {
+            RefreshEventMarkers();
+            RefreshForumMarkers();
+        }
 
     }
 
     protected void onStop() {
         super.onStop();
 
-        AppController.RemoveNewFriendListener(newFriendListener);
         AppController.RemoveUserPongedListener(userPongedListener);
         AppController.RemoveForumsChangedListener(newForumListener);
         AppController.RemoveEventsChangedListener(newEventListener);
 
         pause = true;
+        workerThread.interrupt();
+        workerThread = null;
 
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
-        }
-
-    }
-
-    protected void onResume() {
-        super.onResume();
-
-        if(LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient) != null) {
-            if(workerThread == null) {
-                LocationServiceEnabled();
-            }
         }
 
     }
@@ -262,7 +289,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                                     .center(new LatLng(event.getLocation().getLatitude(), event.getLocation().getLongitude()))
                                     .radius(20000)
                                     .strokeWidth(3)
-                                    .strokeColor(Color.parseColor("#aabbdd")));
+                                    .strokeColor(eventCircleColor));
 
                             Log.i("ClickCheck", "Selecting " + selectedMarker.getTitle());
                         }
@@ -302,7 +329,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
     void MarkerClicked(Marker marker){
 
-        LocoUser user = currentUserMarkers.get(marker);
+        LocoUser user = currentUserMap.get(marker);
         if(user != null){
             Intent chatIntent = new Intent(this, ChatActivity.class);
             chatIntent.putExtra("type", EChatType.PRIVATE.ordinal());
@@ -378,7 +405,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        findViewById(R.id.splash).setVisibility(View.GONE);
+                                        findViewById(R.id.main_splash).setVisibility(View.GONE);
                                     }
                                 });
                             } else {
@@ -500,164 +527,239 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
     }
 
+    void RefreshFriendsMarkers() {
+
+        Collection<LocoUser> friends = AppController.GetFriends().values();
+
+        for (LocoUser friend : friends) {
+
+            Marker marker = reverseFriendsMap.get(friend.getMail());
+            if(marker == null) {
+
+                MarkerOptions options = new MarkerOptions()
+                        .title(friend.getName())
+                        .position(new LatLng(friend.getLocation().getLatitude(), friend.getLocation().getLongitude()));
+
+                if(friend.getSafe()) {
+                    options.icon(safeFriendMarkerIcon);
+                } else {
+                    options.icon(friendMarkerIcon);
+                }
+
+                marker = mMap.addMarker(options);
+
+                friendsMarkersMap.put(marker, friend);
+                reverseFriendsMap.put(friend.getMail(), marker);
+
+            } else {
+
+                marker.setPosition(new LatLng(friend.getLocation().getLatitude(), friend.getLocation().getLongitude()));
+                if(friend.getSafe()) {
+                    marker.setIcon(safeFriendMarkerIcon);
+                } else {
+                    marker.setIcon(friendMarkerIcon);
+                }
+
+            }
+
+        }
+
+    }
+
     public void LocationServiceEnabled() {
 
         pause = false;
         Log.i(TAG, "Starting worker");
-        workerThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Log.i(TAG, pause.toString());
-                while(!pause) {
+        if(workerThread == null) {
+            workerThread = new Thread(new Runnable() {
 
-                    Log.i(TAG, "Worker thread tick");
-                    final Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+                @Override
+                public void run() {
+                    Log.i(TAG, pause.toString());
+                    while (!pause) {
 
-                    if(mLastLocation != null) {
+                        sleepTime = 30000;
 
-                        final GeoPt myLoc = new GeoPt();
-                        myLoc.setLatitude((float) mLastLocation.getLatitude());
-                        myLoc.setLongitude((float) mLastLocation.getLongitude());
+                        Log.i(TAG, "Worker thread tick");
+                        final Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
-                        AppController.GetMyUser().setLocation(myLoc);
-                        ApiHandler.SetMyLocation(myLoc);
+                        if (mLastLocation != null) {
 
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
+                            final GeoPt myLoc = new GeoPt();
+                            myLoc.setLatitude((float) mLastLocation.getLatitude());
+                            myLoc.setLongitude((float) mLastLocation.getLongitude());
 
-                                if (myMarker == null) {
-                                    if (mMap != null) {
+                            AppController.GetMyUser().setLocation(myLoc);
+                            ApiHandler.SetMyLocation(myLoc);
+                            GetNewUsers();
 
-                                        myMarker = mMap.addMarker(new MarkerOptions()
-                                                .title(AppController.GetMyUser().getName())
-                                                .position(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()))
-                                                .icon(myMarkerIcon));
+                            if(mMap == null) {
+                                sleepTime = 1000;
+                            }
 
-                                        cameraPosition = new CameraPosition.Builder()
-                                                .target(myMarker.getPosition())
-                                                .zoom(11)
-                                                .bearing(0)
-                                                .tilt(0)
-                                                .build();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
 
-                                        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                                    if (myMarker == null) {
+                                        if (mMap != null) {
 
-                                        positionRetrieved = true;
+                                            myMarker = mMap.addMarker(new MarkerOptions()
+                                                    .title(AppController.GetMyUser().getName())
+                                                    .position(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()))
+                                                    .icon(myMarkerIcon));
 
+
+                                            if(mMap.getCameraPosition().zoom < 12) {
+
+                                                cameraPosition = new CameraPosition.Builder()
+                                                        .target(myMarker.getPosition())
+                                                        .zoom(11)
+                                                        .bearing(0)
+                                                        .tilt(0)
+                                                        .build();
+
+                                                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+                                            }
+
+                                            positionRetrieved = true;
+
+                                        }
+                                    } else {
+                                        myMarker.setPosition(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()));
                                     }
-                                } else {
-                                    myMarker.setPosition(new LatLng(myLoc.getLatitude(), myLoc.getLongitude()));
-                                }
 
-                                ApiHandler.GetAllUsers(AppController.GetMyUser().getMail(), new IApiCallback<List<UserAroundMe>>() {
-                                    @Override
-                                    public void Invoke(List<UserAroundMe> result) {
-                                        if (result != null) {
-                                            final List<UserAroundMe> fResult = result;
-                                            runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
+                                    if(myMarker != null) {
+                                        if(myRangeCircle == null) {
+                                            myRangeCircle = mMap.addCircle(new CircleOptions()
+                                                    .strokeColor(myCircleColor)
+                                                    .strokeWidth(3)
+                                                    .radius(myRange)
+                                                    .center(myMarker.getPosition()));
+                                        } else {
+                                            myRangeCircle.setCenter(myMarker.getPosition());
+                                            myRangeCircle.setRadius(myRange);
+                                        }
+                                    }
 
-                                                    // Log.i(TAG, fResult.toString());
-                                                    if (currentUserMarkers != null) {
-                                                        for (Map.Entry<Marker, LocoUser> p : currentUserMarkers.entrySet()) {
-                                                            p.getKey().remove();
-                                                        }
-                                                    }
-                                                    currentUserMarkers = new HashMap<Marker, LocoUser>();
-                                                    reverseMarkersMap = new HashMap<String, Marker>();
+                                    for (Marker m : currentUserMap.keySet()) {
+                                        m.remove();
+                                    }
 
-                                                    for (UserAroundMe u : fResult) {
+                                    currentUserMap = new HashMap<Marker, LocoUser>();
+                                    reverseMarkersMap = new HashMap<String, Marker>();
 
-                                                        if (u.getMail().compareTo(AppController.GetMyUser().getMail()) != 0) {
+                                    List<LocoUser> usersAroundMe = AppController.GetKnownUsersAround(myLoc, myRange);
+                                    inUserDrawingPhase = true;
 
-                                                            LocoUser nUser = new LocoUser(u);
-                                                            AppController.AddUserToCache(nUser);
+                                    for (LocoUser user : usersAroundMe) {
 
-                                                            // Log.i(TAG, nUser.toString());
-                                                            if (nUser.getLocation() != null) {
+                                        if(!AppController.CheckIfFriend(user.getMail())) {
 
-                                                                MarkerOptions options = new MarkerOptions()
-                                                                        .position(new LatLng(nUser.getLocation().getLatitude(), nUser.getLocation().getLongitude()))
-                                                                        .title(nUser.getName());
+                                            MarkerOptions options = new MarkerOptions()
+                                                    .position(new LatLng(user.getLocation().getLatitude(), user.getLocation().getLongitude()))
+                                                    .title(user.getName());
 
-                                                                if(AppController.CheckIfSafeFriend(nUser.getMail())) {
-                                                                    options.icon(safeFriendMarkerIcon);
-                                                                } else if(AppController.CheckIfFriend(nUser.getMail())) {
-                                                                    options.icon(friendMarkerIcon);
-                                                                } else {
-                                                                    options.icon(personMarkerIcon);
-                                                                }
+                                            if (AppController.CheckIfSafe(user.getMail())) {
+                                                options.icon(safePersonMarkerIcon);
+                                            } else {
+                                                options.icon(personMarkerIcon);
+                                            }
 
-                                                                Marker newMarker = mMap.addMarker(options);
-                                                                currentUserMarkers.put(newMarker, nUser);
-                                                                reverseMarkersMap.put(nUser.getMail(), newMarker);
-
-                                                            }
-
-                                                        }
-
-                                                    }
-
-                                                    AppController.UpdateFriendsLocation(currentUserMarkers.values(), dao);
-
-                                                }
-
-                                            });
+                                            Marker marker = mMap.addMarker(options);
+                                            currentUserMap.put(marker, user);
+                                            reverseMarkersMap.put(user.getMail(), marker);
 
                                         }
 
+
                                     }
 
-                                });
+                                }
 
+                            });
 
-
-                            }
-
-                        });
-
-                        try {
-                            Thread.sleep(30000, 0);
-                        } catch (InterruptedException e) {
-                            if(workerThread != null) {
-                                Log.e("TickerThread", e.getMessage());
-                                e.printStackTrace();
-                            }
+                        } else {
+                            sleepTime = 1000;
                         }
 
-                    } else {
+                        inUserDrawingPhase = false;
 
-                        try {
-                            Thread.sleep(1000, 0);
-                        } catch (InterruptedException e) {
-                            if(workerThread != null) {
-                                Log.e("TickerThread", e.getMessage());
-                                e.printStackTrace();
+                        if(!skipSleep) {
+                            try {
+                                Thread.sleep(sleepTime, 0);
+                            } catch (InterruptedException e) {
+                                if (workerThread != null) {
+                                    e.printStackTrace();
+                                }
                             }
+                        } else {
+                            skipSleep = false;
                         }
 
                     }
 
                 }
+            });
+
+            workerThread.start();
+
+        }
+
+    }
+
+    void GetNewUsers() {
+
+        ApiHandler.GetUsersAroundMe(AppController.GetMyUser().getLocation(), myRange, AppController.GetMyUser().getMail(), new IApiCallback<List<UserAroundMe>>() {
+            @Override
+            public void Invoke(List<UserAroundMe> result) {
+                if (result != null) {
+
+                    List<UserAroundMe> fResult = result;
+                    List<LocoUser> users = new ArrayList<LocoUser>();
+                    List<LocoUser> newUsers = new ArrayList<LocoUser>();
+
+                    for (UserAroundMe u : fResult) {
+                        if (u.getMail().compareTo(AppController.GetMyUser().getMail()) != 0) {
+
+                            LocoUser nUser = new LocoUser(u);
+                            if (nUser.getLocation() != null) {
+                                users.add(nUser);
+                                if (!AppController.CheckKnownUser(nUser.getMail())) {
+                                    newUsers.add(nUser);
+                                }
+                            }
+
+                        }
+                    }
+
+                    if(newUsers.size() > 0) {
+
+                        if(inUserDrawingPhase) {
+                            skipSleep = true;
+                        }
+                        dao.AddUsers(newUsers);
+                        AppController.SetUsers(dao.GetAllUsers());
+                        for (LocoUser user : newUsers) {
+                            ApiHandler.Ping(user.getMail());
+                        }
+
+                    }
+                    AppController.UpdateUsersLocation(users, dao);
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            RefreshFriendsMarkers();
+                        }
+                    });
+
+                }
 
             }
+
         });
-
-        workerThread.start();
-
-    }
-
-    @Override
-    public LocoUser GetUser(Marker marker) {
-        return currentUserMarkers.get(marker);
-    }
-
-    public void RefreshFriends() {
-
-        DataAccessObject dao = new DataAccessObject(this);
-        dao.GetAllFriends();
 
     }
 

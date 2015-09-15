@@ -103,15 +103,15 @@ public class ChatListAdapter extends ArrayAdapter<Message> {
         holder.image.setImageDrawable(context.getResources().getDrawable(R.drawable.question_man));
         holder.pos = position;
         if(AppController.GetMyUser().getMail().compareTo(messages.get(position).getFrom()) == 0) {
-            holder.content.setBackgroundColor(myColor);
-            holder.content.setGravity(Gravity.END);
+            convertView.setBackgroundColor(myColor);
+            holder.content.setGravity(Gravity.RIGHT);
         } else {
-            holder.content.setBackgroundColor(whiteColor);
-            holder.content.setGravity(Gravity.START);
+            convertView.setBackgroundColor(whiteColor);
+            holder.content.setGravity(Gravity.LEFT);
         }
 
         if(showImages) {
-            LocoUser u = AppController.GetUserFromCache(messages.get(position).getFrom());
+            LocoUser u = AppController.GetUser(messages.get(position).getFrom());
             if (u != null) {
                 AppController.GetImage(u.getIcon(), new ThumbnailTask(holder, position));
             }

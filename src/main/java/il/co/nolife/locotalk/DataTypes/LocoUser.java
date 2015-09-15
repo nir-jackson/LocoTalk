@@ -15,8 +15,10 @@ public class LocoUser {
     String icon;
     GeoPt location;
     Boolean safe;
+    Boolean friend;
 
     public LocoUser() {
+
         mail = "";
         name = "";
         icon = "";
@@ -24,6 +26,8 @@ public class LocoUser {
         location.setLatitude(0f);
         location.setLongitude(0f);
         safe = false;
+        friend = false;
+
     }
 
     public LocoUser(User user) {
@@ -34,6 +38,7 @@ public class LocoUser {
         icon = user.getImageUrl();
         location = user.getLocation().getPoint();
         safe = false;
+        friend = false;
 
     }
 
@@ -44,6 +49,7 @@ public class LocoUser {
         name = user.getDisplayName();
         location = user.getLocation();
         safe = false;
+        friend = false;
         icon = (String) user.get("imageUrl");
         if(icon == null) {
             icon = "";
@@ -112,8 +118,16 @@ public class LocoUser {
         this.safe = safe;
     }
 
+    public Boolean getFriend() {
+        return friend;
+    }
+
+    public void setFriend(Boolean friend) {
+        this.friend = friend;
+    }
+
     @Override
     public String toString() {
-        return "{ regid:" + regId + ", mail:" + mail + ", name:" + name + ", icon:" + icon + ", location:" + ((location == null) ?("null"):(location.toString())) + ", safe:" + safe + " }";
+        return "{ regid:" + regId + ", mail:" + mail + ", name:" + name + ", icon:" + icon + ", location:" + ((location == null) ?("null"):(location.toString())) + ", safe:" + safe + ", friend:" + friend + " }";
     }
 }
