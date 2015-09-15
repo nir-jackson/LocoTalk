@@ -23,37 +23,36 @@
                 android:src="@drawable/question_man"
                 />
 
-            <TextView
+            <RelativeLayout
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:id="@+id/chat_title"
-                android:textSize="40sp"
-                android:gravity= "center"/>
+                android:layout_height="fill_parent"
+                android:orientation="vertical"
+                android:padding="4dp">
+
+                <Button
+                    android:layout_width="fill_parent"
+                    android:layout_height="40dp"
+                    android:id="@+id/chat_center_button"
+                    android:backgroundTintMode="multiply"
+                    android:layout_marginTop="7dp"
+                    android:layout_marginBottom="7dp"
+                    android:layout_alignParentBottom="true"
+                    android:height="40dp" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_above="@id/chat_center_button"
+                    android:ems="10"
+                    android:id="@+id/chat_title"
+                    android:textSize="40sp"
+                    android:gravity= "center"/>
 
 
+
+            </RelativeLayout>
 
         </LinearLayout>
-
-        <TextView
-            style="?android:attr/listSeparatorTextViewStyle"
-            android:paddingTop="5dip"
-            android:gravity="center_horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#000" />
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/chat_center_button"
-            android:backgroundTintMode="multiply"
-            android:layout_marginTop="7dp"
-            android:layout_marginBottom="7dp"
-            android:height="40dp"
-            />
-
-
 
         <TextView
             style="?android:attr/listSeparatorTextViewStyle"

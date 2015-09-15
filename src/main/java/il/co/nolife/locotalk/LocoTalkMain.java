@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.GeoPt;
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.UserAroundMe;
@@ -113,6 +114,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
         myCircleColor = Color.parseColor("#5555ff");
         eventCircleColor = Color.parseColor("#9c39f1");
 
+        final TextView rangeText = (TextView) findViewById(R.id.main_picker_text);
         SeekBar rangePicker = (SeekBar) findViewById(R.id.main_range_picker);
         rangePicker.setMax(MAX_RANGE);
         rangePicker.setProgress(myRange);
@@ -121,6 +123,11 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
                     myRange = progress;
+                    if(progress < 1000) {
+                        rangeText.setText(Integer.toString(progress) + "m");
+                    } else {
+                        rangeText.setText(Integer.toString(progress / 1000) + "Km");
+                    }
                 }
             }
 
@@ -187,8 +194,11 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
         LocationServiceEnabled();
 
         if(mMap != null) {
+
             RefreshEventMarkers();
             RefreshForumMarkers();
+            RefreshFriendsMarkers();
+
         }
 
     }
@@ -544,37 +554,29 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     void RefreshFriendsMarkers() {
 
         Collection<LocoUser> friends = AppController.GetFriends().values();
+        for(Marker marker : forumMarkerMap.keySet()) {
+            marker.remove();
+        }
+
+        friendsMarkersMap = new HashMap<>();
+        reverseFriendsMap = new HashMap<>();
 
         for (LocoUser friend : friends) {
 
-            Marker marker = reverseFriendsMap.get(friend.getMail());
-            if(marker == null) {
+            MarkerOptions options = new MarkerOptions()
+                    .title(friend.getName())
+                    .position(new LatLng(friend.getLocation().getLatitude(), friend.getLocation().getLongitude()));
 
-                MarkerOptions options = new MarkerOptions()
-                        .title(friend.getName())
-                        .position(new LatLng(friend.getLocation().getLatitude(), friend.getLocation().getLongitude()));
-
-                if(friend.getSafe()) {
-                    options.icon(safeFriendMarkerIcon);
-                } else {
-                    options.icon(friendMarkerIcon);
-                }
-
-                marker = mMap.addMarker(options);
-
-                friendsMarkersMap.put(marker, friend);
-                reverseFriendsMap.put(friend.getMail(), marker);
-
+            if(friend.getSafe()) {
+                options.icon(safeFriendMarkerIcon);
             } else {
-
-                marker.setPosition(new LatLng(friend.getLocation().getLatitude(), friend.getLocation().getLongitude()));
-                if(friend.getSafe()) {
-                    marker.setIcon(safeFriendMarkerIcon);
-                } else {
-                    marker.setIcon(friendMarkerIcon);
-                }
-
+                options.icon(friendMarkerIcon);
             }
+
+            Marker marker = mMap.addMarker(options);
+
+            friendsMarkersMap.put(marker, friend);
+            reverseFriendsMap.put(friend.getMail(), marker);
 
         }
 

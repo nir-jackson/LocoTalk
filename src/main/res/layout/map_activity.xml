@@ -50,9 +50,10 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="100km"
-        android:id="@+id/textView3"
-        android:layout_alignTop="@+id/main_range_picker"
-        android:layout_alignParentEnd="true" />
+        android:id="@+id/main_picker_text"
+        android:layout_above="@id/main_range_picker"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="-15dp"/>
 
 
 </RelativeLayout>
