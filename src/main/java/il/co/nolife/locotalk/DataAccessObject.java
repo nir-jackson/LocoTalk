@@ -28,7 +28,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
     public static final String TAG = "DataAccessObject";
 
-    public static final int DATABASE_VERSION = 11;
+    public static final int DATABASE_VERSION = 12;
     public static final String DATABASE_NAME = "areaChat";
 
     public static final String CONVERSATION_TABLE = "conversations";
@@ -131,6 +131,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
         String createFriends = "CREATE TABLE " + USERS_TABLE + " ("
                 + U_MAIL + " TEXT, "
                 + NAME + " TEXT, "
+                + U_IMAGE + " TEXT, "
                 + LOC_LAT + " REAL, "
                 + LOC_LON + " REAL, "
                 + U_SAFE + " INTEGER, "
