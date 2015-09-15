@@ -33,8 +33,7 @@ import il.co.nolife.locotalk.ViewClasses.SimpleDialog;
  */
 public class EventOrForumActivity extends Activity {
 
-    public static final int min = 0;
-    public static final int max = 300000;
+    // public static final int max = 300000;
 
     Button forum, event;
 
@@ -102,7 +101,7 @@ public class EventOrForumActivity extends Activity {
 
         radiusPanel = (LinearLayout) findViewById(R.id.picker_number_holder);
         seekBar = (SeekBar) findViewById(R.id.picker_seek_bar);
-        seekBar.setMax(max);
+        seekBar.setMax(LocoTalkMain.MAX_RANGE);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
