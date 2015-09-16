@@ -1044,6 +1044,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
             newEvent.setName(cursor.getString(cursor.getColumnIndex(NAME)));
             newEvent.setOwner(cursor.getString(cursor.getColumnIndex(OWNER)));
             newEvent.setConversation(cursor.getLong(cursor.getColumnIndex(C_KEY)));
+            newEvent.setRadius(cursor.getInt(cursor.getColumnIndex(RADIUS)));
 
         }
 

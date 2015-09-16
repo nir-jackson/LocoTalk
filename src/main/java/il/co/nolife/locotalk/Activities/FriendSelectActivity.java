@@ -1,19 +1,14 @@
 package il.co.nolife.locotalk.Activities;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.util.Log;
+import android.view.Window;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import java.util.List;
 
@@ -21,71 +16,12 @@ import il.co.nolife.locotalk.AppController;
 import il.co.nolife.locotalk.Callback;
 import il.co.nolife.locotalk.DataTypes.LocoUser;
 import il.co.nolife.locotalk.R;
+import il.co.nolife.locotalk.ViewClasses.FriendsListAdapter;
 
 /**
  * Created by Victor Belski on 9/16/2015.
  */
 public class FriendSelectActivity extends Activity {
-
-    class FriendsListAdapter extends ArrayAdapter<LocoUser> {
-
-        class ViewHolder {
-            ImageView image;
-            TextView text;
-        }
-
-        List<LocoUser> users;
-        List<LocoUser> allUsers;
-        LayoutInflater inflater;
-        Context context;
-        Callback<LocoUser> onClickCallback;
-
-        public FriendsListAdapter(Context context, List<LocoUser> availableUsers, Callback<LocoUser> onClickCallback) {
-            super(context, R.layout.friend_item_layout, availableUsers);
-
-            this.context = context;
-            users = availableUsers;
-            allUsers = availableUsers;
-            inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            this.onClickCallback = onClickCallback;
-
-        }
-
-        @Override
-        public View getView(final int position, View convertView, ViewGroup parent) {
-
-            if(convertView == null) {
-                convertView = inflater.inflate(R.layout.friend_item_layout, parent);
-            }
-
-            convertView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onClickCallback.Invoke(users.get(position));
-                }
-            });
-
-            ViewHolder holder = (ViewHolder) convertView.getTag();
-            if(holder == null) {
-
-                holder = new ViewHolder();
-                holder.image = (ImageView) convertView.findViewById(R.id.friend_item_image);
-                holder.text = (TextView) convertView.findViewById(R.id.friend_item_text);
-
-            }
-
-            holder.image.setImageDrawable(context.getResources().getDrawable(R.drawable.question_man));
-            holder.text.setText(users.get(position).getName());
-
-            convertView.setTag(holder);
-
-            return convertView;
-
-        }
-
-
-
-    }
 
     EditText searchField;
     ListView friendsList;
@@ -96,6 +32,9 @@ public class FriendSelectActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.get_friend_layout);
 
         searchField = (EditText) findViewById(R.id.get_friend_search);
 
@@ -126,6 +65,8 @@ public class FriendSelectActivity extends Activity {
         String[] exclude = getIntent().getStringArrayExtra("exclude");
 
         all = AppController.GetSafeFriends();
+        Log.i(getClass().toString(), "Before:");
+        PrintList(all);
         if(exclude != null) {
             for (String s : exclude) {
                 for (int i = 0; i < all.size(); ++i) {
@@ -136,10 +77,12 @@ public class FriendSelectActivity extends Activity {
                 }
             }
         }
+        Log.i(getClass().toString(), "After:");
+        PrintList(all);
 
         filtered = all;
 
-        adapter = new FriendsListAdapter(this, filtered, new Callback<LocoUser>() {
+        adapter = new FriendsListAdapter(this, R.layout.get_friend_layout, filtered, new Callback<LocoUser>() {
             @Override
             public void Invoke(LocoUser result) {
 
@@ -150,6 +93,16 @@ public class FriendSelectActivity extends Activity {
 
             }
         });
+
+        friendsList.setAdapter(adapter);
+
+    }
+
+    void PrintList(List<LocoUser> l) {
+
+        for (LocoUser u : l) {
+            Log.i(getClass().toString(), u.getMail());
+        }
 
     }
 

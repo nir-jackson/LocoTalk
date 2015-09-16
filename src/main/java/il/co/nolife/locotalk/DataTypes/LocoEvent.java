@@ -54,4 +54,15 @@ public class LocoEvent {
         this.conversation = conversation;
     }
 
+    @Override
+    public String toString() {
+        return "LocoEvent{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", owner='" + owner + '\'' +
+                ", location=" + location +
+                ", radius=" + radius +
+                ", conversation=" + conversation +
+                '}';
+    }
 }

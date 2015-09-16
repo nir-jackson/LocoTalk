@@ -428,15 +428,20 @@ public class ApiHandler {
 
             final String json = builder.toString();
 
+            Log.i(TAG, event.toString());
+
             instance.GetUsersAroundPoint(event.getRadius(), event.getLocation().getLatitude(), event.getLocation().getLongitude(), new Callback<List<UserAroundMe>>() {
                 @Override
                 public void Invoke(List<UserAroundMe> result) {
+                    Log.i(TAG, result.toString());
                     if(result != null) {
                         String myMail = AppController.GetMyUser().getMail();
+                        Log.i(TAG, "Sendding to users:");
                         for (UserAroundMe user : result) {
                             String mail = user.getMail();
                             Log.i(TAG, mail);
                             if(myMail.compareTo(mail) != 0) {
+                                Log.i(TAG, mail);
                                 instance.SendGCMMessageAsync(user.getMail(), json);
                             }
                         }
@@ -772,7 +777,7 @@ public class ApiHandler {
 
                 try {
 
-                    List<UserAroundMe> retVal = api.getUsersAroundMe(lon, lat, radius, user.getMail()).execute().getItems();
+                    List<UserAroundMe> retVal = api.getUsersAroundMe(lat, lon, radius, user.getMail()).execute().getItems();
                     if(callback!= null) {
                         callback.Invoke(retVal);
                     }

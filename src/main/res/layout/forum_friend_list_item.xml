@@ -5,19 +5,26 @@
 
     <Button
         android:id="@+id/remove_button"
-        android:layout_width="100dp"
+        android:layout_width="80dp"
         android:layout_height="match_parent"
         android:layout_alignParentEnd="true"
         android:backgroundTint="#aa4444"
         android:backgroundTintMode="multiply"
         android:text="Remove"/>
 
-    <AutoCompleteTextView
-        android:layout_width="fill_parent"
+    <ImageView
+        android:layout_width="100dp"
         android:layout_height="match_parent"
-        android:id="@+id/auto_complete_friend_item"
+        android:id="@+id/friend_item_image"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/friend_item_text"
         android:layout_toLeftOf="@id/remove_button"
-        />
+        android:layout_toRightOf="@id/friend_item_image"/>
+
+
 
 
 

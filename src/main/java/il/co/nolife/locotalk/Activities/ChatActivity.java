@@ -243,6 +243,7 @@ public class ChatActivity extends Activity {
 
                     if(!content.getText().toString().isEmpty()) {
 
+                        Log.i("Check event", event.toString());
                         ApiHandler.SendEventMessage(event, content.getText().toString());
                         Message newMessage = new Message();
                         newMessage.setContnet(content.getText().toString());
