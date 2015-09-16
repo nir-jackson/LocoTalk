@@ -147,11 +147,12 @@ public class EventOrForumActivity extends Activity {
             public void onClick(View v) {
 
                 Intent intent = new Intent(getApplicationContext(), FriendSelectActivity.class);
-                ArrayList<String> exclude = new ArrayList<String>();
-                for (LocoUser u : users) {
-                    exclude.add(u.getMail());
+                String[] exclude = new String[users.size()];
+                for(int i = 0; i < exclude.length; ++i) {
+                    exclude[i] = users.get(i).getName();
                 }
-                intent.putStringArrayListExtra("exclude", exclude);
+
+                intent.putExtra("exclude", exclude);
 
                 startActivityForResult(intent, 0);
 

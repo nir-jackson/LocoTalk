@@ -325,8 +325,14 @@ public class ApiHandler {
             builder.append(", 'lon':");
             builder.append(forum.getLocation().getLongitude());
             builder.append(", 'participants': [");
+            boolean first = true;
             for (LocoUser u : forum.getUsers()) {
-                builder.append("{ 'mail':'");
+                if(first) {
+                    builder.append("{ 'mail':'");
+                    first = false;
+                } else {
+                    builder.append(", { 'mail':'");
+                }
                 builder.append(u.getMail());
                 builder.append("', 'name':'");
                 builder.append(u.getName());

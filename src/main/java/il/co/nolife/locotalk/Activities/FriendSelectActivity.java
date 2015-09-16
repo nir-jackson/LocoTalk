@@ -40,9 +40,12 @@ public class FriendSelectActivity extends Activity {
 
         searchField.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
             @Override
             public void afterTextChanged(Editable s) {
@@ -50,7 +53,7 @@ public class FriendSelectActivity extends Activity {
                 String str = s.toString().toLowerCase();
                 filtered.clear();
                 for (LocoUser u : all) {
-                    if(u.getName().toLowerCase().contains(str)) {
+                    if (u.getName().toLowerCase().contains(str)) {
                         filtered.add(u);
                     }
                 }
@@ -69,6 +72,7 @@ public class FriendSelectActivity extends Activity {
         PrintList(all);
         if(exclude != null) {
             for (String s : exclude) {
+                Log.i(getClass().toString(), s);
                 for (int i = 0; i < all.size(); ++i) {
                     if (s.compareTo(all.get(i).getMail()) == 0) {
                         all.remove(i);
