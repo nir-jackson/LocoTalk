@@ -101,7 +101,6 @@ public class ChatActivity extends Activity {
             }
         }
 
-        list.setSelection(adapter.getCount() - 1);
         adapter.sort(new Comparator<Message>() {
             @Override
             public int compare(Message lhs, Message rhs) {
@@ -119,6 +118,9 @@ public class ChatActivity extends Activity {
 
             }
         });
+        adapter.notifyDataSetChanged();
+
+        list.setSelection(adapter.getCount() - 1);
 
     }
 
@@ -159,6 +161,7 @@ public class ChatActivity extends Activity {
                 ApiHandler.SendMessageToUser(newMessage, null);
                 newMessage.setTimestamp(new DateTime(new Date()));
                 dao.WriteMessageToUserConversation(newMessage, true);
+                contentList.add(newMessage);
                 content.setText("");
                 list.setSelection(adapter.getCount() - 1);
 
@@ -251,6 +254,7 @@ public class ChatActivity extends Activity {
                         newMessage.setTimestamp(new DateTime(new Date()));
                         dao.WriteMessageToEvent(event, newMessage);
                         content.setText("");
+                        list.setSelection(adapter.getCount() - 1);
 
                     }
 
@@ -319,6 +323,8 @@ public class ChatActivity extends Activity {
                         newMessage.setFrom(AppController.GetMyUser().getMail());
                         newMessage.setTimestamp(new DateTime(new Date()));
                         dao.WriteMessageToForum(forum, newMessage);
+                        content.setText("");
+                        list.setSelection(adapter.getCount() - 1);
 
                     }
 

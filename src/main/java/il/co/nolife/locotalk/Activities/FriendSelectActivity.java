@@ -10,6 +10,7 @@ import android.view.Window;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import il.co.nolife.locotalk.AppController;
@@ -53,6 +54,7 @@ public class FriendSelectActivity extends Activity {
                 String str = s.toString().toLowerCase();
                 filtered.clear();
                 for (LocoUser u : all) {
+                    Log.i(getClass().toString(), u.getName() + " contains " + str + " = " + u.getName().toLowerCase().contains(str));
                     if (u.getName().toLowerCase().contains(str)) {
                         filtered.add(u);
                     }
@@ -84,7 +86,7 @@ public class FriendSelectActivity extends Activity {
         Log.i(getClass().toString(), "After:");
         PrintList(all);
 
-        filtered = all;
+        filtered = new ArrayList<>(all);
 
         adapter = new FriendsListAdapter(this, R.layout.get_friend_layout, filtered, new Callback<LocoUser>() {
             @Override

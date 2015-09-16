@@ -5,14 +5,14 @@
     android:padding="4dp">
 
     <ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:src="@drawable/question_man"
         android:id="@+id/friend_item_image"/>
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="80dp"
         android:id="@+id/friend_item_text"
         android:gravity="center"
         android:text="test"
