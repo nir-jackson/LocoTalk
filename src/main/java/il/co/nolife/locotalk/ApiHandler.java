@@ -338,7 +338,7 @@ public class ApiHandler {
                 builder.append(u.getName());
                 builder.append("', 'icon':'");
                 builder.append(u.getIcon());
-                builder.append("' }, ");
+                builder.append("' }");
             }
             builder.append("] }");
 
