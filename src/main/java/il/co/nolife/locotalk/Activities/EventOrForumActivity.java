@@ -1,15 +1,20 @@
 package il.co.nolife.locotalk.Activities;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SeekBar;
@@ -19,7 +24,6 @@ import com.appspot.enhanced_cable_88320.aroundmeapi.model.GeoPt;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import il.co.nolife.locotalk.ApiHandler;
@@ -29,7 +33,6 @@ import il.co.nolife.locotalk.DataTypes.LocoEvent;
 import il.co.nolife.locotalk.DataTypes.LocoForum;
 import il.co.nolife.locotalk.DataTypes.LocoUser;
 import il.co.nolife.locotalk.R;
-import il.co.nolife.locotalk.ViewClasses.FriendsAddedListAdapter;
 import il.co.nolife.locotalk.ViewClasses.SimpleDialog;
 
 /**
@@ -37,7 +40,62 @@ import il.co.nolife.locotalk.ViewClasses.SimpleDialog;
  */
 public class EventOrForumActivity extends Activity {
 
-    // public static final int max = 300000;
+    class RemovalbleFriendListAdapter extends ArrayAdapter<LocoUser> {
+
+        class ViewHolder {
+            ImageView image;
+            TextView text;
+            Button remove;
+        }
+
+        List<LocoUser> users;
+        Context context;
+        LayoutInflater inflater;
+
+        public RemovalbleFriendListAdapter(Context context, List<LocoUser> users) {
+            super(context, R.layout.forum_friend_list_item, users);
+
+            this.users = users;
+            this.context = context;
+            inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        }
+
+        @Override
+        public View getView(final int pos, View convertView, ViewGroup parent) {
+
+            if(convertView == null) {
+                convertView = inflater.inflate(R.layout.forum_friend_list_item, parent, false);
+            }
+
+            ViewHolder holder = (ViewHolder) convertView.getTag();
+
+            if(holder == null) {
+
+                holder = new ViewHolder();
+                holder.image = (ImageView) convertView.findViewById(R.id.friend_item_image);
+                holder.text = (TextView) convertView.findViewById(R.id.friend_item_text);
+                holder.remove = (Button) convertView.findViewById(R.id.remove_button);
+
+            }
+
+            holder.image.setImageDrawable(context.getResources().getDrawable(R.drawable.question_man));
+            holder.text.setText(users.get(pos).getName());
+            holder.remove.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    users.remove(pos);
+                    notifyDataSetChanged();
+                }
+            });
+
+            convertView.setTag(holder);
+
+            return convertView;
+
+        }
+
+    }
 
     Button forum, event;
 
@@ -52,9 +110,8 @@ public class EventOrForumActivity extends Activity {
 
     Intent thisIntent;
 
-    static List<String> participants;
-    List<String> friendMails;
-    FriendsAddedListAdapter adapter;
+    List<LocoUser> users;
+    RemovalbleFriendListAdapter adapter;
 
     boolean forumSelected;
 
@@ -67,26 +124,16 @@ public class EventOrForumActivity extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.event_or_forum);
 
-        if(participants == null) {
-            participants = new ArrayList<String>();
-        }
+        users = new ArrayList<>();
 
-        List<LocoUser> friends = AppController.GetSafeFriends();
-        friendMails = new ArrayList<>();
-
-        for (LocoUser u : friends) {
-            friendMails.add(u.getMail());
-        }
-
-
-        forum = (Button)findViewById(R.id.picker_forum);
+        forum = (Button) findViewById(R.id.picker_forum);
         forum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ForumClicked();
             }
         });
-        event = (Button)findViewById(R.id.picker_event);
+        event = (Button) findViewById(R.id.picker_event);
         event.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -98,8 +145,16 @@ public class EventOrForumActivity extends Activity {
         addFriend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                participants.add("");
-                adapter.notifyDataSetChanged();
+
+                Intent intent = new Intent(getApplicationContext(), FriendSelectActivity.class);
+                ArrayList<String> exclude = new ArrayList<String>();
+                for (LocoUser u : users) {
+                    exclude.add(u.getMail());
+                }
+                intent.putStringArrayListExtra("exclude", exclude);
+
+                startActivityForResult(intent, 0);
+
             }
         });
 
@@ -135,7 +190,7 @@ public class EventOrForumActivity extends Activity {
 
         nameView = (EditText) findViewById(R.id.picker_name_text);
         participantsList = (ListView) findViewById(R.id.picker_participants);
-        adapter = new FriendsAddedListAdapter(this, participants, friendMails);
+        adapter = new RemovalbleFriendListAdapter(this, users);
         participantsList.setAdapter(adapter);
 
         finish = (Button) findViewById(R.id.picker_create);
@@ -157,6 +212,20 @@ public class EventOrForumActivity extends Activity {
 
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(resultCode == RESULT_OK) {
+
+            String mail = data.getStringExtra("mail");
+            LocoUser user = AppController.GetUser(mail);
+            users.add(user);
+            adapter.notifyDataSetChanged();
+
+        }
+
+    }
 
     void ForumClicked() {
 
@@ -204,28 +273,17 @@ public class EventOrForumActivity extends Activity {
 
             if (forumSelected) {
 
-                HashMap<String, LocoUser> friendsMap = AppController.GetFriends();
-                List<LocoUser> actual = new ArrayList<>();
 
-                for (String p : participants) {
-                    if(friendMails.contains(p)) {
-                        LocoUser user = friendsMap.get(p);
-                        if(user != null) {
-                            actual.add(user);
-                        }
-                    }
-                }
+                users.add(AppController.GetMyUser());
 
-                actual.add(AppController.GetMyUser());
-
-                if(actual.size() > 1) {
+                if(users.size() > 1) {
 
                     LocoForum newForum = new LocoForum();
                     newForum.setLocation(position);
                     newForum.setName(name);
                     newForum.setOwner(AppController.GetMyUser().getMail());
 
-                    newForum.setUsers(actual);
+                    newForum.setUsers(users);
 
                     DataAccessObject dao = new DataAccessObject(getApplicationContext());
 
@@ -236,7 +294,7 @@ public class EventOrForumActivity extends Activity {
                         long forumId = random.nextLong();
                         if(forumId != -1) {
                             newForum.setId(forumId);
-                            ret = dao.CreateOwnedForum(actual, position, name, AppController.GetMyUser().getMail(), forumId);
+                            ret = dao.CreateOwnedForum(users, position, name, AppController.GetMyUser().getMail(), forumId);
                         }
 
                     } while(!ret);
@@ -293,10 +351,6 @@ public class EventOrForumActivity extends Activity {
 
         }
 
-    }
-
-    public static void Reset() {
-        participants = new ArrayList<>();
     }
 
 }

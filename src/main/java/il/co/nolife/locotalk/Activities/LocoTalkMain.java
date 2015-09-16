@@ -363,11 +363,12 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     }
 
     void LongMapClicked (LatLng latLng){
-        EventOrForumActivity.Reset();
+
         Intent chooseIntent = new Intent(this, EventOrForumActivity.class);
         chooseIntent.putExtra("lon",latLng.longitude);
         chooseIntent.putExtra("lat",latLng.latitude);
         startActivity(chooseIntent);
+
     }
 
     void MarkerClicked(Marker marker){
