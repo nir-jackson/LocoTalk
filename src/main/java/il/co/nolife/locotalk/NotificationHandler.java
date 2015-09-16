@@ -5,6 +5,8 @@ import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 
 import il.co.nolife.locotalk.Activities.LocoTalkMain;
@@ -15,12 +17,13 @@ import il.co.nolife.locotalk.Activities.LocoTalkMain;
 public class NotificationHandler {
 
     public static void SendNotification (String title, String content, Context context){
-
+        Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.ic_launcher)
-                        .setContentTitle("My notification")
-                        .setContentText("Hello World!");
+                        .setContentTitle(title)
+                        .setContentText(content)
+                        .setSound(alarmSound);
         // Creates an explicit intent for an Activity in your app
         Intent resultIntent = new Intent(context, LocoTalkMain.class);
 
