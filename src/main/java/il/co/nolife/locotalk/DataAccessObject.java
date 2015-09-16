@@ -511,7 +511,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
         }
 
         created.close();
-        created = db.rawQuery("SELECT * FROM " + EVENTS_TABLE + " WHERE " + F_KEY + "=" + eventId, null);
+        created = db.rawQuery("SELECT * FROM " + EVENTS_TABLE + " WHERE " + E_KEY + "=" + eventId, null);
         if(created.moveToFirst()) {
             if(created.getString(created.getColumnIndex(OWNER)).compareTo(owner) == 0) {
                 // This event already exists

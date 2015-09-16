@@ -28,6 +28,7 @@ public class GcmMessageHandler {
 
     public static void HandleMessage(Context context, JSONObject message, String orig) {
 
+        Log.i(TAG, orig);
         ApiHandler.Initialize(context);
         String dataType = message.optString("type");
         if(dataType != null) {
@@ -86,7 +87,7 @@ public class GcmMessageHandler {
                     String owner = message.getString("owner");
                     JSONObject mo = message.getJSONObject("message");
                     Message actualMessage = new Message();
-                    actualMessage.setContnet(mo.getString("context"));
+                    actualMessage.setContnet(mo.getString("content"));
                     actualMessage.setTimestamp(new DateTime(mo.getLong("time")));
                     actualMessage.setFrom(mo.getString("from"));
 
@@ -108,7 +109,7 @@ public class GcmMessageHandler {
                     String name = message.getString("name");
                     JSONObject mo = message.getJSONObject("message");
                     Message actualMessage = new Message();
-                    actualMessage.setContnet(mo.getString("context"));
+                    actualMessage.setContnet(mo.getString("content"));
                     actualMessage.setTimestamp(new DateTime(mo.getLong("time")));
                     actualMessage.setFrom(mo.getString("from"));
 
