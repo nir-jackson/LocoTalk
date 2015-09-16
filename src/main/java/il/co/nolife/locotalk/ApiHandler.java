@@ -316,7 +316,7 @@ public class ApiHandler {
 
             builder.append("{ 'type' : 'newForum', 'forumId':");
             builder.append(forum.getId());
-            builder.append(", 'owner':");
+            builder.append(", 'owner':'");
             builder.append(forum.getOwner());
             builder.append("', 'name':'");
             builder.append(forum.getName());
@@ -344,6 +344,7 @@ public class ApiHandler {
 
             String json = builder.toString();
             String myMail = AppController.GetMyUser().getMail();
+            Log.i(TAG, json);
             for (LocoUser user : forum.getUsers()) {
 
                 String mail = user.getMail();
@@ -384,6 +385,8 @@ public class ApiHandler {
             builder.append("' } }");
 
             String json = builder.toString();
+
+            Log.i("CHECK FORUM", json);
 
             String myMail = AppController.GetMyUser().getMail();
             for (LocoUser user : forum.getUsers()) {

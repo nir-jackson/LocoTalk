@@ -323,7 +323,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
                                     eventRadius = mMap.addCircle(new CircleOptions()
                                             .center(new LatLng(event.getLocation().getLatitude(), event.getLocation().getLongitude()))
-                                            .radius(20000)
+                                            .radius(event.getRadius())
                                             .strokeWidth(3)
                                             .strokeColor(eventCircleColor));
 

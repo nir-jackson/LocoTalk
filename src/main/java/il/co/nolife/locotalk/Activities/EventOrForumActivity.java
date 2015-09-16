@@ -274,7 +274,6 @@ public class EventOrForumActivity extends Activity {
 
             if (forumSelected) {
 
-
                 users.add(AppController.GetMyUser());
 
                 if(users.size() > 1) {
@@ -295,7 +294,7 @@ public class EventOrForumActivity extends Activity {
                         long forumId = random.nextLong();
                         if(forumId != -1) {
                             newForum.setId(forumId);
-                            ret = dao.CreateOwnedForum(users, position, name, AppController.GetMyUser().getMail(), forumId);
+                            ret = dao.CreateOwnedForum(newForum.getUsers(), newForum.getLocation(), newForum.getName(), newForum.getOwner(), forumId);
                         }
 
                     } while(!ret);
