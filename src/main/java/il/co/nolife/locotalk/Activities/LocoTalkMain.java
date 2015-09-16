@@ -99,8 +99,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
     DataAccessObject dao;
 
     Callback<String> userPongedListener;
-    Callback<Long> newForumListener;
-    Callback<Long> newEventListener;
+    Callback<Long> eventMessageListener;
 
     List<Callback<Void>> waitingForMap;
 
@@ -118,6 +117,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
         dao = new DataAccessObject(this);
         myCircleColor = Color.parseColor("#5555ff");
         eventCircleColor = Color.parseColor("#9c39f1");
+        AppController.SetMainActivity(this);
 
         final TextView rangeText = (TextView) findViewById(R.id.main_picker_text);
         rangeText.setText(Integer.toString(myRange / 1000) + " Km");
@@ -130,7 +130,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
                     myRange = progress;
-                    if(progress < 1000) {
+                    if (progress < 1000) {
                         rangeText.setText(Integer.toString(progress) + "m");
                     } else {
                         rangeText.setText(Integer.toString(progress / 1000) + "Km");
@@ -187,21 +187,34 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             }
         };
 
+        eventMessageListener = new Callback<Long>() {
+            @Override
+            public void Invoke(Long result) {
+                RefreshEventMarkers();
+            }
+        };
+
         buildGoogleApiClient();
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        AppController.SetMainActivity(null);
     }
 
     protected void onStart() {
         super.onStart();
 
         AppController.SetUsers(dao.GetAllUsers());
-
         AppController.AddUserPongedListener(userPongedListener);
         mGoogleApiClient.connect();
         LocationServiceEnabled();
 
         if(mMap != null) {
 
+            AppController.AddNewEventMessageListener(eventMessageListener);
             RefreshEventMarkers();
             RefreshForumMarkers();
             RefreshFriendsMarkers();
@@ -214,8 +227,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
         super.onStop();
 
         AppController.RemoveUserPongedListener(userPongedListener);
-        AppController.RemoveForumsChangedListener(newForumListener);
-        AppController.RemoveEventsChangedListener(newEventListener);
+        AppController.RemoveNewEventMessageListener(eventMessageListener);
 
         pause = true;
         workerThread.interrupt();
@@ -517,22 +529,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             c.Invoke(null);
         }
 
-        newForumListener = new Callback<Long>() {
-            @Override
-            public void Invoke(final Long result) {
-                RefreshForumMarkers();
-            }
-        };
-
-        newEventListener = new Callback<Long>() {
-            @Override
-            public void Invoke(Long result) {
-                RefreshEventMarkers();
-            }
-        };
-
-        AppController.AddForumsChangedListener(newForumListener);
-        AppController.AddEventsChangedListener(newEventListener);
+        AppController.AddNewEventMessageListener(eventMessageListener);
 
         for (Marker marker : eventMarkerMap.keySet()) {
             marker.remove();

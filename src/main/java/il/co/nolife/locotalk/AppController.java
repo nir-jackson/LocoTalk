@@ -1,5 +1,6 @@
 package il.co.nolife.locotalk;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -81,9 +82,7 @@ public class AppController {
     private AppController() {
 
         newMessageListeners = new ArrayList<Callback<Message>>();
-        forumsChangedListeners = new ArrayList<Callback<Long>>();
         newForumMsgListeners = new ArrayList<Callback<Long>>();
-        eventsChangedListeners = new ArrayList<Callback<Long>>();
         newEventMsgListeners = new ArrayList<Callback<Long>>();
         userPongedListener = new ArrayList<Callback<String>>();
         cachedImages = new HashMap<String, Bitmap>();
@@ -96,9 +95,7 @@ public class AppController {
     }
 
     List<Callback<Message>> newMessageListeners;
-    List<Callback<Long>> forumsChangedListeners;
     List<Callback<Long>> newForumMsgListeners;
-    List<Callback<Long>> eventsChangedListeners;
     List<Callback<Long>> newEventMsgListeners;
     List<Callback<String>> userPongedListener;
 
@@ -111,6 +108,8 @@ public class AppController {
 
     LocoUser myUser;
 
+    Activity mainActivity;
+
     RangeHelper GetRangeHelper(GeoPt loc, int range) {
         return new RangeHelper(loc, range);
     }
@@ -121,21 +120,9 @@ public class AppController {
         }
     }
 
-    public static void ForumsChanged(long forumId) {
-        for (Callback<Long> c : instance.forumsChangedListeners) {
-            c.Invoke(forumId);
-        }
-    }
-
     public static void NewForumMessage(long forumId) {
         for (Callback<Long> c : instance.newForumMsgListeners) {
             c.Invoke(forumId);
-        }
-    }
-
-    public static void EventsChanged(long eventId) {
-        for (Callback<Long> c : instance.eventsChangedListeners) {
-            c.Invoke(eventId);
         }
     }
 
@@ -152,43 +139,35 @@ public class AppController {
     }
 
     public static void AddPrivateMessageListener(Callback<Message> listener) {
-        instance.newMessageListeners.add(listener);
-    }
-
-    public static void AddForumsChangedListener(Callback<Long> listener) {
-        instance.forumsChangedListeners.add(listener);
+        if(!instance.newMessageListeners.contains(listener)) {
+            instance.newMessageListeners.add(listener);
+        }
     }
 
     public static void AddNewForumMessageListener(Callback<Long> listener) {
-        instance.newForumMsgListeners.add(listener);
+        if(!instance.newForumMsgListeners.contains(listener)) {
+            instance.newForumMsgListeners.add(listener);
+        }
     }
 
     public static void AddUserPongedListener(Callback<String> listener) {
-        instance.userPongedListener.add(listener);
-    }
-
-    public static void AddEventsChangedListener(Callback<Long> listener) {
-        instance.eventsChangedListeners.add(listener);
+        if(!instance.userPongedListener.contains(listener)) {
+            instance.userPongedListener.add(listener);
+        }
     }
 
     public static void AddNewEventMessageListener(Callback<Long> listener) {
-        instance.newEventMsgListeners.add(listener);
+        if(!instance.newEventMsgListeners.contains(listener)) {
+            instance.newEventMsgListeners.add(listener);
+        }
     }
 
     public static void RemovePrivateMessageListener(Callback<Message> listener) {
         instance.newMessageListeners.remove(listener);
     }
 
-    public static void RemoveForumsChangedListener(Callback<Long> listener) {
-        instance.forumsChangedListeners.remove(listener);
-    }
-
     public static void RemoveNewForumMessageListener(Callback<Long> listener) {
         instance.newForumMsgListeners.remove(listener);
-    }
-
-    public static void RemoveEventsChangedListener(Callback<Long> listener) {
-        instance.eventsChangedListeners.remove(listener);
     }
 
     public static void RemoveNewEventMessageListener(Callback<Long> listener) {
@@ -369,6 +348,14 @@ public class AppController {
 
         }
 
+    }
+
+    public static void SetMainActivity(Activity activity) {
+        instance.mainActivity = activity;
+    }
+
+    public static Activity GetMainActivity() {
+        return instance.mainActivity;
     }
 
 }

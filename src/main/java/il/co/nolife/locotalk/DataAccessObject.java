@@ -293,7 +293,6 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
             }
 
-            AppController.ForumsChanged(forumId);
             return true;
 
         } else {
@@ -380,7 +379,6 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         }
 
-        AppController.ForumsChanged(forumId);
         return res;
 
     }
@@ -483,10 +481,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
         long res = db.insert(EVENTS_TABLE, null, values);
 
         if(res != -1) {
-
-            AppController.EventsChanged(eventId);
             return true;
-
         } else {
             return false;
         }
@@ -551,7 +546,6 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         }
 
-        AppController.EventsChanged(eventId);
         return res;
 
     }
@@ -580,7 +574,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
                             ContentValues undelete = new ContentValues();
                             undelete.put(DELETED, 0);
 
-                            db.update(EVENTS_TABLE, undelete, E_KEY + "=" + event.getLong(event.getColumnIndex(C_KEY)), null);
+                            db.update(EVENTS_TABLE, undelete, E_KEY + "=" + event.getLong(event.getColumnIndex(E_KEY)), null);
 
                             break;
                         }
@@ -604,7 +598,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
                 ContentValues undelete = new ContentValues();
                 undelete.put(DELETED, 0);
 
-                db.update(EVENTS_TABLE, undelete, E_KEY + "=" + event.getLong(event.getColumnIndex(C_KEY)), null);
+                db.update(EVENTS_TABLE, undelete, E_KEY + "=" + event.getLong(event.getColumnIndex(E_KEY)), null);
 
                 AppController.NewEventMessage(eventId);
 
@@ -1021,8 +1015,6 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         db.update(FORUMS_TABLE, values, F_KEY + "=" + forum.getId(), null);
 
-        AppController.ForumsChanged(forum.getId());
-
     }
 
     public LocoEvent GetEvent(long eventId) {
@@ -1062,8 +1054,6 @@ public class DataAccessObject extends SQLiteOpenHelper {
         values.put(DELETED, 1);
 
         db.update(EVENTS_TABLE, values, E_KEY + "=" + event.getId(), null);
-
-        AppController.EventsChanged(event.getId());
 
     }
 

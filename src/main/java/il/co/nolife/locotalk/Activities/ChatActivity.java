@@ -66,16 +66,17 @@ public class ChatActivity extends Activity {
 
             @Override
             public void Invoke(final Bitmap result) {
-                if(holder.pos == pos) {
-                    if(result != null) {
-                        activity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(holder.pos == pos) {
+                            if (result != null) {
                                 holder.image.setImageBitmap(result);
                             }
-                        });
+                        }
                     }
-                }
+                });
+
             }
 
         }
@@ -343,6 +344,7 @@ public class ChatActivity extends Activity {
                     contentList.clear();
                     contentList.addAll(dao.GetAllMessagesFromEvent(event.getId()));
                     adapter.notifyDataSetChanged();
+                    list.setSelection(adapter.getCount() - 1);
 
                 }
 
@@ -414,6 +416,7 @@ public class ChatActivity extends Activity {
                         contentList.clear();
                         contentList.addAll(dao.GetAllMessagesFromForum(forum.getId()));
                         adapter.notifyDataSetChanged();
+                        list.setSelection(adapter.getCount() - 1);
 
                     }
 
@@ -432,8 +435,8 @@ public class ChatActivity extends Activity {
                         newMessage.setFrom(AppController.GetMyUser().getMail());
                         newMessage.setTimestamp(new DateTime(new Date()));
                         dao.WriteMessageToForum(forum, newMessage);
-                        contentList.add(newMessage);
-                        adapter.notifyDataSetChanged();
+                        // contentList.add(newMessage);
+                        // adapter.notifyDataSetChanged();
                         content.setText("");
                         list.setSelection(adapter.getCount() - 1);
 
