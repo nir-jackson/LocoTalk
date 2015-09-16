@@ -405,7 +405,7 @@ public class ChatActivity extends Activity {
             list.setAdapter(adapter);
             Log.i(getClass().toString(), "Forum Chat");
 
-            eventMessageCallback = new Callback<Long>() {
+            forumMessageCallback = new Callback<Long>() {
                 @Override
                 public void Invoke(Long result) {
 
