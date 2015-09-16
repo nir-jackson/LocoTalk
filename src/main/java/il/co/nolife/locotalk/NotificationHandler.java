@@ -23,7 +23,8 @@ public class NotificationHandler {
                         .setSmallIcon(R.drawable.ic_launcher)
                         .setContentTitle(title)
                         .setContentText(content)
-                        .setSound(alarmSound);
+                        .setSound(alarmSound)
+                        .setOnlyAlertOnce(true);
         // Creates an explicit intent for an Activity in your app
         Intent resultIntent = new Intent(context, LocoTalkMain.class);
 
