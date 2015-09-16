@@ -16,7 +16,7 @@ import org.json.JSONObject;
 public class LocoTalkMessageReceiver extends BroadcastReceiver {
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(final Context context, Intent intent) {
 
         ApiHandler.Initialize(context);
         final DataAccessObject dao = new DataAccessObject(context);
@@ -29,6 +29,7 @@ public class LocoTalkMessageReceiver extends BroadcastReceiver {
                     @Override
                     public void Invoke(Message result) {
                         dao.WriteMessageToUserConversation(result, false);
+                        NotificationHandler.SendNotification(result.getFrom(),result.getContnet(),context);
                     }
                 });
             } catch (NumberFormatException e) {

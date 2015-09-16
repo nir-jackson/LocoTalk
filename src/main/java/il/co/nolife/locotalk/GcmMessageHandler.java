@@ -92,6 +92,7 @@ public class GcmMessageHandler {
 
                     DataAccessObject dao = new DataAccessObject(context);
                     dao.WriteMessageToForum(forumId, owner, actualMessage);
+                    NotificationHandler.SendNotification(actualMessage.getFrom(), actualMessage.getContnet(), context);
 
                 } else if (dataType.compareTo("eventMessage") == 0) {
 
@@ -113,6 +114,7 @@ public class GcmMessageHandler {
 
                     DataAccessObject dao = new DataAccessObject(context);
                     dao.WriteMessageToEvent(eventId, name, owner, loc, radius, actualMessage);
+                    NotificationHandler.SendNotification(actualMessage.getFrom(), actualMessage.getContnet(), context);
 
                 } else if(dataType.compareTo("removeForum") == 0) {
 
