@@ -14,13 +14,14 @@ import java.util.List;
 
 import il.co.nolife.locotalk.AppController;
 import il.co.nolife.locotalk.DataTypes.LocoUser;
-import il.co.nolife.locotalk.IApiCallback;
+import il.co.nolife.locotalk.Callback;
 import il.co.nolife.locotalk.R;
 
 /**
  * Created by NirLapTop on 9/12/2015.
  */
 public class ContactListAdapter extends ArrayAdapter<LocoUser> {
+
     class ViewHolder{
         ImageView image;
         TextView name;
@@ -28,7 +29,7 @@ public class ContactListAdapter extends ArrayAdapter<LocoUser> {
     }
 
 
-    class ThumbnailTask implements IApiCallback<Bitmap> {
+    class ThumbnailTask implements Callback<Bitmap> {
 
         ViewHolder holder;
         int pos;
@@ -59,38 +60,46 @@ public class ContactListAdapter extends ArrayAdapter<LocoUser> {
     Context context;
     List<LocoUser> users;
     Activity myActivity;
-    public ContactListAdapter(Context context, List<LocoUser> objects, Activity activity) {
+    Callback<LocoUser> onClickCallback;
+
+    public ContactListAdapter(Context context, List<LocoUser> objects, Activity activity, Callback<LocoUser> onClick) {
         super(context, R.layout.contact_item, objects);
+
         this.context = context;
         users = objects;
         myActivity = activity;
+        onClickCallback = onClick;
 
     }
 
 
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         if(convertView == null) {
 
             LayoutInflater inflater = (LayoutInflater) context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.chat_item, parent, false);
         }
-        ViewHolder meta = (ViewHolder) convertView.getTag();
+        ViewHolder holder = (ViewHolder) convertView.getTag();
 
-        if(meta == null) {
+        if(holder == null) {
 
-            meta = new ViewHolder();
-            meta.name = (TextView) convertView.findViewById(R.id.contact_name);
-            meta.image = (ImageView) convertView.findViewById(R.id.contact_image);
+            holder = new ViewHolder();
+            holder.name = (TextView) convertView.findViewById(R.id.contact_name);
+            holder.image = (ImageView) convertView.findViewById(R.id.contact_image);
 
         }
 
-        meta.name.setText(users.get(position).getName());
-        meta.image.setImageDrawable(context.getResources().getDrawable(R.drawable.question_man));
-        meta.pos = position;
-        //User u = AppController.GetUserFromCache(users.get(position).getMail());
-        AppController.GetImage(users.get(position).getIcon(), new ThumbnailTask(meta, position));
-
+        holder.name.setText(users.get(position).getName());
+        holder.image.setImageDrawable(context.getResources().getDrawable(R.drawable.question_man));
+        holder.pos = position;
+        AppController.GetImage(users.get(position).getIcon(), new ThumbnailTask(holder, position));
+        convertView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickCallback.Invoke(users.get(position));
+            }
+        });
 
         return convertView;
 

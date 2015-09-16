@@ -1,4 +1,4 @@
-package il.co.nolife.locotalk;
+package il.co.nolife.locotalk.Activities;
 
 import android.app.Activity;
 import android.content.Context;
@@ -24,10 +24,15 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import il.co.nolife.locotalk.ApiHandler;
+import il.co.nolife.locotalk.AppController;
+import il.co.nolife.locotalk.DataAccessObject;
 import il.co.nolife.locotalk.DataTypes.EChatType;
 import il.co.nolife.locotalk.DataTypes.LocoEvent;
 import il.co.nolife.locotalk.DataTypes.LocoForum;
 import il.co.nolife.locotalk.DataTypes.LocoUser;
+import il.co.nolife.locotalk.Callback;
+import il.co.nolife.locotalk.R;
 import il.co.nolife.locotalk.ViewClasses.ChatListAdapter;
 
 /**
@@ -45,9 +50,9 @@ public class ChatActivity extends Activity {
 
     Intent intent;
 
-    IApiCallback<Message> messageCallback;
-    IApiCallback<Long> forumMessageCallback;
-    IApiCallback<Long> eventMessageCallback;
+    Callback<Message> messageCallback;
+    Callback<Long> forumMessageCallback;
+    Callback<Long> eventMessageCallback;
 
     DataAccessObject dao;
 
@@ -127,7 +132,7 @@ public class ChatActivity extends Activity {
         Log.i(getClass().toString(), tempurl);
         title.setText(user.getName());
 
-        AppController.GetImage(tempurl, new IApiCallback<Bitmap>() {
+        AppController.GetImage(tempurl, new Callback<Bitmap>() {
             @Override
             public void Invoke(final Bitmap result) {
                 runOnUiThread(new Runnable() {
@@ -160,7 +165,7 @@ public class ChatActivity extends Activity {
             }
         });
 
-        messageCallback = new IApiCallback<Message>() {
+        messageCallback = new Callback<Message>() {
             @Override
             public void Invoke(final Message result) {
                 if(result.getFrom().compareTo(user.getMail()) == 0) {
@@ -175,6 +180,7 @@ public class ChatActivity extends Activity {
                 }
             }
         };
+        Log.i("SequenceCheck", "after message callback created");
 
         centerButton = (Button) findViewById(R.id.chat_center_button);
 
@@ -216,7 +222,7 @@ public class ChatActivity extends Activity {
             list.setAdapter(adapter);
             Log.i(getClass().toString(), "Event Chat");
 
-            eventMessageCallback = new IApiCallback<Long>() {
+            eventMessageCallback = new Callback<Long>() {
                 @Override
                 public void Invoke(Long result) {
 
@@ -285,7 +291,7 @@ public class ChatActivity extends Activity {
             list.setAdapter(adapter);
             Log.i(getClass().toString(), "Forum Chat");
 
-            eventMessageCallback = new IApiCallback<Long>() {
+            eventMessageCallback = new Callback<Long>() {
                 @Override
                 public void Invoke(Long result) {
 
@@ -364,6 +370,7 @@ public class ChatActivity extends Activity {
         if(messageCallback != null) {
             AppController.RemovePrivateMessageListener(messageCallback);
         }
+        Log.i("SequenceCheck", "after message callback attached");
         if(forumMessageCallback != null) {
             AppController.RemoveNewForumMessageListener(forumMessageCallback);
         }

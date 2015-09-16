@@ -47,14 +47,14 @@ public class ApiHandler {
     LocoTalkSharedPreferences prefs;
     User user;
 
-    List<IApiCallback<Void>> delayedCalls;
+    List<Callback<Void>> delayedCalls;
 
     boolean initialized = false;
 
     ApiHandler() {
 
         EndpointApiCreator.initialize(null);
-        delayedCalls = new ArrayList<IApiCallback<Void>>();
+        delayedCalls = new ArrayList<Callback<Void>>();
         initialized = false;
 
         try {
@@ -72,15 +72,15 @@ public class ApiHandler {
             instance.prefs = new LocoTalkSharedPreferences(context);
             instance.context = context;
             instance.user = instance.prefs.GetUser();
-            instance.RegisterAsync(new IApiCallback<Void>() {
+            instance.RegisterAsync(new Callback<Void>() {
                 @Override
                 public void Invoke(Void result) {
                     instance.initialized = true;
-                    for (IApiCallback<Void> c : instance.delayedCalls) {
+                    for (Callback<Void> c : instance.delayedCalls) {
                         c.Invoke(null);
                     }
                     Log.i(getClass().toString(), "Successfully initialized");
-                    instance.delayedCalls = new ArrayList<IApiCallback<Void>>();
+                    instance.delayedCalls = new ArrayList<Callback<Void>>();
                 }
             });
 
@@ -88,13 +88,13 @@ public class ApiHandler {
 
     }
 
-    public static void GetRegistrationId(final IApiCallback<String> callback) {
+    public static void GetRegistrationId(final Callback<String> callback) {
 
         if(instance.initialized) {
             callback.Invoke(instance.regId);
         } else {
 
-            instance.delayedCalls.add(new IApiCallback<Void>() {
+            instance.delayedCalls.add(new Callback<Void>() {
                 @Override
                 public void Invoke(Void result) {
                     callback.Invoke(instance.regId);
@@ -105,13 +105,13 @@ public class ApiHandler {
 
     }
 
-    public static void RetrieveMessage(final long messageId, final IApiCallback<Message> onEnd) {
+    public static void RetrieveMessage(final long messageId, final Callback<Message> onEnd) {
 
         if (instance.initialized) {
             instance.RetrieveMessageAsync(messageId, onEnd);
         } else {
 
-            instance.delayedCalls.add(new IApiCallback<Void>() {
+            instance.delayedCalls.add(new Callback<Void>() {
                 @Override
                 public void Invoke(Void result) {
                     RetrieveMessage(messageId, onEnd);
@@ -128,7 +128,7 @@ public class ApiHandler {
             instance.SendGCMMessageAsync(mail, message);
         } else {
 
-            instance.delayedCalls.add(new IApiCallback<Void>() {
+            instance.delayedCalls.add(new Callback<Void>() {
                 @Override
                 public void Invoke(Void result) {
                     SendGCMMessage(mail, message);
@@ -151,7 +151,7 @@ public class ApiHandler {
 
     }
 
-    public static void Login(final User user, final IApiCallback<Boolean> callback) {
+    public static void Login(final User user, final Callback<Boolean> callback) {
 
         Log.i(instance.getClass().toString(), "Trying to login");
 
@@ -164,7 +164,7 @@ public class ApiHandler {
 //            if(pass.isEmpty()) {
 //                instance.Register(user, callback);
 //            }
-            instance.LoginAsync(u2, new IApiCallback<User>() {
+            instance.LoginAsync(u2, new Callback<User>() {
                 @Override
                 public void Invoke(User result) {
 
@@ -187,7 +187,7 @@ public class ApiHandler {
                 }
             });
         } else {
-            instance.delayedCalls.add(new IApiCallback<Void>() {
+            instance.delayedCalls.add(new Callback<Void>() {
                 @Override
                 public void Invoke(Void result) {
                     Login(user, callback);
@@ -198,20 +198,20 @@ public class ApiHandler {
 
     }
 
-    void Register(final User user, final IApiCallback<Boolean> callback) {
+    void Register(final User user, final Callback<Boolean> callback) {
 
         if(instance.initialized) {
             //SecureRandom random = new SecureRandom();
             final String pass = "abcde";
             user.setPassword(pass);
-            instance.RegisterUserAsync(user, new IApiCallback<User>() {
+            instance.RegisterUserAsync(user, new Callback<User>() {
                 @Override
                 public void Invoke(User result) {
                     if (result != null) {
 
                         instance.prefs.StorePassword(pass);
                         result.setPassword(pass);
-                        instance.LoginAsync(result, new IApiCallback<User>() {
+                        instance.LoginAsync(result, new Callback<User>() {
                             @Override
                             public void Invoke(User result) {
 
@@ -247,7 +247,7 @@ public class ApiHandler {
             });
 
         } else {
-            instance.delayedCalls.add(new IApiCallback<Void>() {
+            instance.delayedCalls.add(new Callback<Void>() {
                 @Override
                 public void Invoke(Void result) {
                     Register(user, callback);
@@ -258,13 +258,13 @@ public class ApiHandler {
 
     }
 
-    public static void SendMessageToUser(final Message message, final IApiCallback<Boolean> onEnd) {
+    public static void SendMessageToUser(final Message message, final Callback<Boolean> onEnd) {
 
         if(instance.initialized) {
             instance.SendStructuredMessageAsync(message, onEnd);
         } else {
 
-            instance.delayedCalls.add(new IApiCallback<Void>() {
+            instance.delayedCalls.add(new Callback<Void>() {
                 @Override
                 public void Invoke(Void result) {
                     SendMessageToUser(message, onEnd);
@@ -282,7 +282,7 @@ public class ApiHandler {
             Log.i(TAG, "Sent ping to " + mail);
         } else {
 
-            instance.delayedCalls.add(new IApiCallback<Void>() {
+            instance.delayedCalls.add(new Callback<Void>() {
                 @Override
                 public void Invoke(Void result) {
                     Ping(mail);
@@ -293,12 +293,12 @@ public class ApiHandler {
 
     }
 
-    public static void GetUsersAroundMe(final GeoPt point, final int radius, final String mail, final IApiCallback<List<UserAroundMe>> onEnd) {
+    public static void GetUsersAroundMe(final GeoPt point, final int radius, final String mail, final Callback<List<UserAroundMe>> onEnd) {
 
         if(instance.initialized) {
             instance.GetUsersAroundMeAsync(point, radius, mail, onEnd);
         } else {
-            instance.delayedCalls.add(new IApiCallback<Void>() {
+            instance.delayedCalls.add(new Callback<Void>() {
                 @Override
                 public void Invoke(Void result) {
                     GetUsersAroundMe(point, radius, mail, onEnd);
@@ -348,7 +348,7 @@ public class ApiHandler {
 
         } else {
 
-            instance.delayedCalls.add(new IApiCallback<Void>() {
+            instance.delayedCalls.add(new Callback<Void>() {
                 @Override
                 public void Invoke(Void result) {
                     CreateForum(forum);
@@ -389,7 +389,7 @@ public class ApiHandler {
 
         } else {
 
-            instance.delayedCalls.add(new IApiCallback<Void>() {
+            instance.delayedCalls.add(new Callback<Void>() {
                 @Override
                 public void Invoke(Void result) {
                     SendForumMessage(forum, message);
@@ -428,13 +428,14 @@ public class ApiHandler {
 
             final String json = builder.toString();
 
-            instance.GetUsersAroundPoint(event.getRadius(), event.getLocation().getLatitude(), event.getLocation().getLongitude(), new IApiCallback<List<UserAroundMe>>() {
+            instance.GetUsersAroundPoint(event.getRadius(), event.getLocation().getLatitude(), event.getLocation().getLongitude(), new Callback<List<UserAroundMe>>() {
                 @Override
                 public void Invoke(List<UserAroundMe> result) {
                     if(result != null) {
                         String myMail = AppController.GetMyUser().getMail();
                         for (UserAroundMe user : result) {
                             String mail = user.getMail();
+                            Log.i(TAG, mail);
                             if(myMail.compareTo(mail) != 0) {
                                 instance.SendGCMMessageAsync(user.getMail(), json);
                             }
@@ -445,7 +446,7 @@ public class ApiHandler {
 
         } else {
 
-            instance.delayedCalls.add(new IApiCallback<Void>() {
+            instance.delayedCalls.add(new Callback<Void>() {
                 @Override
                 public void Invoke(Void result) {
                     SendEventMessage(event, message);
@@ -483,7 +484,7 @@ public class ApiHandler {
 
         } else {
 
-            instance.delayedCalls.add(new IApiCallback<Void>() {
+            instance.delayedCalls.add(new Callback<Void>() {
                 @Override
                 public void Invoke(Void result) {
                     RemoveFromForum(forum);
@@ -501,7 +502,7 @@ public class ApiHandler {
      * Stores the registration ID and app versionCode in the application's
      * shared preferences.
      */
-    void RegisterAsync(final IApiCallback<Void> onEnd) {
+    void RegisterAsync(final Callback<Void> onEnd) {
 
         new AsyncTask<Void, Void, Boolean>() {
 
@@ -589,7 +590,7 @@ public class ApiHandler {
 
     }
 
-    void RegisterUserAsync(final User user, final IApiCallback<User> onEnd) {
+    void RegisterUserAsync(final User user, final Callback<User> onEnd) {
 
         new AsyncTask<Void, Void, Boolean>() {
 
@@ -621,7 +622,7 @@ public class ApiHandler {
 
     }
 
-    void LoginAsync(final User user, final IApiCallback<User> onEnd) {
+    void LoginAsync(final User user, final Callback<User> onEnd) {
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -656,7 +657,7 @@ public class ApiHandler {
 
     }
 
-    void SendMessageAsync(final String message, final IApiCallback<Boolean> onEnd) {
+    void SendMessageAsync(final String message, final Callback<Boolean> onEnd) {
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -685,7 +686,7 @@ public class ApiHandler {
 
     }
 
-    void ReportLocationAsync(final GeoPt location, final IApiCallback<Boolean> onEnd) {
+    void ReportLocationAsync(final GeoPt location, final Callback<Boolean> onEnd) {
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -712,7 +713,7 @@ public class ApiHandler {
 
     }
 
-    void SendStructuredMessageAsync(final Message message, final IApiCallback<Boolean> onEnd) {
+    void SendStructuredMessageAsync(final Message message, final Callback<Boolean> onEnd) {
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -737,7 +738,7 @@ public class ApiHandler {
 
     }
 
-    void GetUsersAroundMeAsync(final GeoPt point, final int radius, final String mail, final IApiCallback<List<UserAroundMe>> onEnd) {
+    void GetUsersAroundMeAsync(final GeoPt point, final int radius, final String mail, final Callback<List<UserAroundMe>> onEnd) {
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -762,7 +763,7 @@ public class ApiHandler {
 
     }
 
-    void GetUsersAroundPoint(final int radius, final float lat, final float lon, final IApiCallback<List<UserAroundMe>> callback) {
+    void GetUsersAroundPoint(final int radius, final float lat, final float lon, final Callback<List<UserAroundMe>> callback) {
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -789,7 +790,7 @@ public class ApiHandler {
 
     }
 
-    void SendForumMessage(final LocoForum forum, final String message, final IApiCallback<Boolean> onEnd) {
+    void SendForumMessage(final LocoForum forum, final String message, final Callback<Boolean> onEnd) {
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -822,7 +823,7 @@ public class ApiHandler {
 
     }
 
-    void RetrieveMessageAsync(final long messageId, final IApiCallback<Message> onEnd) {
+    void RetrieveMessageAsync(final long messageId, final Callback<Message> onEnd) {
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -863,7 +864,7 @@ public class ApiHandler {
 
     }
 
-    public static void GetAllUsers(final String mail, final IApiCallback<List<UserAroundMe>> callback) {
+    public static void GetAllUsers(final String mail, final Callback<List<UserAroundMe>> callback) {
 
         if(instance.initialized) {
 
@@ -888,7 +889,7 @@ public class ApiHandler {
 
         } else {
 
-            instance.delayedCalls.add(new IApiCallback<Void>() {
+            instance.delayedCalls.add(new Callback<Void>() {
                 @Override
                 public void Invoke(Void result) {
                     GetAllUsers(mail, callback);

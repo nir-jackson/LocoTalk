@@ -49,20 +49,20 @@
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="@string/google_maps_key" />
-        <activity android:name=".ChatActivity"
+        <activity android:name=".Activities.ChatActivity"
             android:label="@string/app_name">
 
         </activity>
 
         <activity
-            android:name=".EventOrForumActivity"
+            android:name=".Activities.EventOrForumActivity"
             android:label="@string/app_name"
             android:windowSoftInputMode="stateVisible|adjustResize">
 
         </activity>
 
         <activity
-            android:name="il.co.nolife.locotalk.LocoTalkMain"
+            android:name=".Activities.LocoTalkMain"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

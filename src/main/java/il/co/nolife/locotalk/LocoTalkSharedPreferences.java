@@ -8,6 +8,8 @@ import android.util.Log;
 
 import com.appspot.enhanced_cable_88320.aroundmeapi.model.User;
 
+import il.co.nolife.locotalk.Activities.LocoTalkMain;
+
 /**
  * Created by Victor Belski on 9/6/2015.
  * Designed to handle all operations that require the shared preferences in AreaChat

@@ -1,4 +1,4 @@
-package il.co.nolife.locotalk;
+package il.co.nolife.locotalk.Activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -22,9 +22,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import il.co.nolife.locotalk.ApiHandler;
+import il.co.nolife.locotalk.AppController;
+import il.co.nolife.locotalk.DataAccessObject;
 import il.co.nolife.locotalk.DataTypes.LocoEvent;
 import il.co.nolife.locotalk.DataTypes.LocoForum;
 import il.co.nolife.locotalk.DataTypes.LocoUser;
+import il.co.nolife.locotalk.R;
 import il.co.nolife.locotalk.ViewClasses.FriendsAddedListAdapter;
 import il.co.nolife.locotalk.ViewClasses.SimpleDialog;
 

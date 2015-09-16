@@ -184,7 +184,26 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         if(db.insert(MESSAGE_CONVERSATION, null, values) == -1) {
             Log.e(TAG, "Failed to insert message into conversation table");
+        } else {
+
         }
+
+    }
+
+    public long GetUserConversation(String mail) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DIRECT_CONVERSATIONS_TABLE + " WHERE " + M_FROM + "='" + mail + "'", null);
+
+        long retVal = -1;
+        if(cursor.moveToFirst()) {
+            retVal = cursor.getLong(cursor.getColumnIndex(C_KEY));
+        }
+
+        cursor.close();
+
+        return retVal;
 
     }
 
@@ -192,7 +211,7 @@ public class DataAccessObject extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        List<Message> retVal = new ArrayList<Message>();
+        List<Message> retVal = new ArrayList<>();
 
         Cursor cursor = db.rawQuery("SELECT * FROM " + MESSAGE_CONVERSATION + " WHERE " + C_KEY + "=" + convId, null);
 

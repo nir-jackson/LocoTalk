@@ -1,4 +1,4 @@
-package il.co.nolife.locotalk;
+package il.co.nolife.locotalk.Activities;
 
 import android.content.Intent;
 import android.content.IntentSender;
@@ -39,10 +39,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import il.co.nolife.locotalk.ApiHandler;
+import il.co.nolife.locotalk.AppController;
+import il.co.nolife.locotalk.DataAccessObject;
 import il.co.nolife.locotalk.DataTypes.EChatType;
 import il.co.nolife.locotalk.DataTypes.LocoEvent;
 import il.co.nolife.locotalk.DataTypes.LocoForum;
 import il.co.nolife.locotalk.DataTypes.LocoUser;
+import il.co.nolife.locotalk.Callback;
+import il.co.nolife.locotalk.R;
 import il.co.nolife.locotalk.ViewClasses.SimpleDialog;
 
 // import com.google.android.gms.location.LocationListener;
@@ -93,11 +98,11 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
     DataAccessObject dao;
 
-    IApiCallback<String> userPongedListener;
-    IApiCallback<Long> newForumListener;
-    IApiCallback<Long> newEventListener;
+    Callback<String> userPongedListener;
+    Callback<Long> newForumListener;
+    Callback<Long> newEventListener;
 
-    List<IApiCallback<Void>> waitingForMap;
+    List<Callback<Void>> waitingForMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,7 +169,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
         waitingForMap = new ArrayList<>();
 
-        userPongedListener = new IApiCallback<String>() {
+        userPongedListener = new Callback<String>() {
             @Override
             public void Invoke(String result) {
 
@@ -452,12 +457,12 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
             AppController.SetMyUser(myUser);
             // Log.i(TAG, myUser.toString());
 
-            ApiHandler.GetRegistrationId(new IApiCallback<String>() {
+            ApiHandler.GetRegistrationId(new Callback<String>() {
                 @Override
                 public void Invoke(String result) {
                     AppController.GetMyUser().setRegId(result);
                     Log.i(TAG, AppController.GetMyUser().toString());
-                    ApiHandler.Login(AppController.GetMyUser().toUser(), new IApiCallback<Boolean>() {
+                    ApiHandler.Login(AppController.GetMyUser().toUser(), new Callback<Boolean>() {
                         @Override
                         public void Invoke(Boolean result) {
                             if(result) {
@@ -507,18 +512,18 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
     public void onMapReady() {
 
-        for (IApiCallback<Void> c : waitingForMap) {
+        for (Callback<Void> c : waitingForMap) {
             c.Invoke(null);
         }
 
-        newForumListener = new IApiCallback<Long>() {
+        newForumListener = new Callback<Long>() {
             @Override
             public void Invoke(final Long result) {
                 RefreshForumMarkers();
             }
         };
 
-        newEventListener = new IApiCallback<Long>() {
+        newEventListener = new Callback<Long>() {
             @Override
             public void Invoke(Long result) {
                 RefreshEventMarkers();
@@ -778,7 +783,7 @@ public class LocoTalkMain extends FragmentActivity implements GoogleApiClient.Co
 
     void GetNewUsers() {
 
-        ApiHandler.GetUsersAroundMe(AppController.GetMyUser().getLocation(), myRange, AppController.GetMyUser().getMail(), new IApiCallback<List<UserAroundMe>>() {
+        ApiHandler.GetUsersAroundMe(AppController.GetMyUser().getLocation(), myRange, AppController.GetMyUser().getMail(), new Callback<List<UserAroundMe>>() {
             @Override
             public void Invoke(List<UserAroundMe> result) {
                 if (result != null) {

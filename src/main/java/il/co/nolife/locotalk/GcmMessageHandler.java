@@ -95,6 +95,7 @@ public class GcmMessageHandler {
 
                 } else if (dataType.compareTo("eventMessage") == 0) {
 
+                    Log.i("EVENTMESSAGE", orig);
                     long eventId = message.getLong("eventId");
                     String owner = message.getString("owner");
                     int radius = message.getInt("radius");

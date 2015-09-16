@@ -62,7 +62,7 @@ public class AppController {
 
         instance = new AppController();
 
-        AddUserPongedListener(new IApiCallback<String>() {
+        AddUserPongedListener(new Callback<String>() {
             @Override
             public void Invoke(String result) {
 
@@ -80,31 +80,31 @@ public class AppController {
 
     private AppController() {
 
-        newMessageListeners = new ArrayList<IApiCallback<Message>>();
-        forumsChangedListeners = new ArrayList<IApiCallback<Long>>();
-        newForumMsgListeners = new ArrayList<IApiCallback<Long>>();
-        eventsChangedListeners = new ArrayList<IApiCallback<Long>>();
-        newEventMsgListeners = new ArrayList<IApiCallback<Long>>();
-        userPongedListener = new ArrayList<IApiCallback<String>>();
+        newMessageListeners = new ArrayList<Callback<Message>>();
+        forumsChangedListeners = new ArrayList<Callback<Long>>();
+        newForumMsgListeners = new ArrayList<Callback<Long>>();
+        eventsChangedListeners = new ArrayList<Callback<Long>>();
+        newEventMsgListeners = new ArrayList<Callback<Long>>();
+        userPongedListener = new ArrayList<Callback<String>>();
         cachedImages = new HashMap<String, Bitmap>();
         downloading = false;
-        pendingDownloads = new ArrayList<IApiCallback<Void>>();
+        pendingDownloads = new ArrayList<Callback<Void>>();
         allUsers = new HashMap<String, LocoUser>();
         myUser = new LocoUser();
         friends = new HashMap<>();
 
     }
 
-    List<IApiCallback<Message>> newMessageListeners;
-    List<IApiCallback<Long>> forumsChangedListeners;
-    List<IApiCallback<Long>> newForumMsgListeners;
-    List<IApiCallback<Long>> eventsChangedListeners;
-    List<IApiCallback<Long>> newEventMsgListeners;
-    List<IApiCallback<String>> userPongedListener;
+    List<Callback<Message>> newMessageListeners;
+    List<Callback<Long>> forumsChangedListeners;
+    List<Callback<Long>> newForumMsgListeners;
+    List<Callback<Long>> eventsChangedListeners;
+    List<Callback<Long>> newEventMsgListeners;
+    List<Callback<String>> userPongedListener;
 
     HashMap<String, Bitmap> cachedImages;
     boolean downloading;
-    List<IApiCallback<Void>> pendingDownloads;
+    List<Callback<Void>> pendingDownloads;
 
     HashMap<String, LocoUser> allUsers;
     HashMap<String, LocoUser> friends;
@@ -116,90 +116,90 @@ public class AppController {
     }
 
     public static void NewPrivateMessage(Message message) {
-        for (IApiCallback<Message> c : instance.newMessageListeners) {
+        for (Callback<Message> c : instance.newMessageListeners) {
             c.Invoke(message);
         }
     }
 
     public static void ForumsChanged(long forumId) {
-        for (IApiCallback<Long> c : instance.forumsChangedListeners) {
+        for (Callback<Long> c : instance.forumsChangedListeners) {
             c.Invoke(forumId);
         }
     }
 
     public static void NewForumMessage(long forumId) {
-        for (IApiCallback<Long> c : instance.newForumMsgListeners) {
+        for (Callback<Long> c : instance.newForumMsgListeners) {
             c.Invoke(forumId);
         }
     }
 
     public static void EventsChanged(long eventId) {
-        for (IApiCallback<Long> c : instance.eventsChangedListeners) {
+        for (Callback<Long> c : instance.eventsChangedListeners) {
             c.Invoke(eventId);
         }
     }
 
     public static void NewEventMessage(long eventId) {
-        for (IApiCallback<Long> c : instance.newEventMsgListeners) {
+        for (Callback<Long> c : instance.newEventMsgListeners) {
             c.Invoke(eventId);
         }
     }
 
     public static void UserPonged(String user) {
-        for(IApiCallback<String> c : instance.userPongedListener) {
+        for(Callback<String> c : instance.userPongedListener) {
             c.Invoke(user);
         }
     }
 
-    public static void AddPrivateMessageListener(IApiCallback<Message> listener) {
+    public static void AddPrivateMessageListener(Callback<Message> listener) {
         instance.newMessageListeners.add(listener);
     }
 
-    public static void AddForumsChangedListener(IApiCallback<Long> listener) {
+    public static void AddForumsChangedListener(Callback<Long> listener) {
         instance.forumsChangedListeners.add(listener);
     }
 
-    public static void AddNewForumMessageListener(IApiCallback<Long> listener) {
+    public static void AddNewForumMessageListener(Callback<Long> listener) {
         instance.newForumMsgListeners.add(listener);
     }
 
-    public static void AddUserPongedListener(IApiCallback<String> listener) {
+    public static void AddUserPongedListener(Callback<String> listener) {
         instance.userPongedListener.add(listener);
     }
 
-    public static void AddEventsChangedListener(IApiCallback<Long> listener) {
+    public static void AddEventsChangedListener(Callback<Long> listener) {
         instance.eventsChangedListeners.add(listener);
     }
 
-    public static void AddNewEventMessageListener(IApiCallback<Long> listener) {
+    public static void AddNewEventMessageListener(Callback<Long> listener) {
         instance.newEventMsgListeners.add(listener);
     }
 
-    public static void RemovePrivateMessageListener(IApiCallback<Message> listener) {
+    public static void RemovePrivateMessageListener(Callback<Message> listener) {
         instance.newMessageListeners.remove(listener);
     }
 
-    public static void RemoveForumsChangedListener(IApiCallback<Long> listener) {
+    public static void RemoveForumsChangedListener(Callback<Long> listener) {
         instance.forumsChangedListeners.remove(listener);
     }
 
-    public static void RemoveNewForumMessageListener(IApiCallback<Long> listener) {
+    public static void RemoveNewForumMessageListener(Callback<Long> listener) {
         instance.newForumMsgListeners.remove(listener);
     }
 
-    public static void RemoveEventsChangedListener(IApiCallback<Long> listener) {
+    public static void RemoveEventsChangedListener(Callback<Long> listener) {
         instance.eventsChangedListeners.remove(listener);
     }
 
-    public static void RemoveNewEventMessageListener(IApiCallback<Long> listener) {
+    public static void RemoveNewEventMessageListener(Callback<Long> listener) {
         instance.newEventMsgListeners.remove(listener);
     }
 
-    public static void RemoveUserPongedListener(IApiCallback<String> listener) {
+    public static void RemoveUserPongedListener(Callback<String> listener) {
         instance.userPongedListener.remove(listener);
     }
 
-    public static void GetImage(final String url, final IApiCallback<Bitmap> callback) {
+    public static void GetImage(final String url, final Callback<Bitmap> callback) {
 
         Log.i(TAG, "Trying to get user image: " + url);
 
@@ -239,7 +239,7 @@ public class AppController {
                         if(instance.pendingDownloads.size() > 0) {
 
                             Log.i(TAG, "Calling the next download: " + url);
-                            IApiCallback<Void> nextDownload = instance.pendingDownloads.get(0);
+                            Callback<Void> nextDownload = instance.pendingDownloads.get(0);
                             instance.pendingDownloads.remove(0);
                             nextDownload.Invoke(null);
 
@@ -252,7 +252,7 @@ public class AppController {
                 }.execute();
 
             } else {
-                instance.pendingDownloads.add(new IApiCallback<Void>() {
+                instance.pendingDownloads.add(new Callback<Void>() {
                     @Override
                     public void Invoke(Void result) {
                         GetImage(url, callback);

@@ -18,7 +18,7 @@ import java.util.List;
 
 import il.co.nolife.locotalk.AppController;
 import il.co.nolife.locotalk.DataTypes.LocoUser;
-import il.co.nolife.locotalk.IApiCallback;
+import il.co.nolife.locotalk.Callback;
 import il.co.nolife.locotalk.R;
 
 /**
@@ -34,7 +34,7 @@ public class ChatListAdapter extends ArrayAdapter<Message> {
 
     }
 
-    class ThumbnailTask implements IApiCallback<Bitmap> {
+    class ThumbnailTask implements Callback<Bitmap> {
 
         ViewHolder holder;
         int pos;

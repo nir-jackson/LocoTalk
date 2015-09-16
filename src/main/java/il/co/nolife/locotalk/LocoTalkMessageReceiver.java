@@ -25,7 +25,7 @@ public class LocoTalkMessageReceiver extends BroadcastReceiver {
 
             String messageId = intent.getStringExtra("newMessage");
             try {
-                ApiHandler.RetrieveMessage(Long.parseLong(messageId), new IApiCallback<Message>() {
+                ApiHandler.RetrieveMessage(Long.parseLong(messageId), new Callback<Message>() {
                     @Override
                     public void Invoke(Message result) {
                         dao.WriteMessageToUserConversation(result, false);
