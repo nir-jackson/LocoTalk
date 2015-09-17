@@ -10,6 +10,11 @@
   @com.google.api.client.util.Key <fields>;
 }
 
+-keep public class * extends android.app.Activity
+-keep public class * extends android.app.Application
+-keep public class * extends android.content.BroadcastReceiver
+-keep public class * extends android.preference.Preference
+
 # Needed by google-http-client-android when linking against an older platform version
 
 -dontwarn com.google.api.client.extensions.android.**
